@@ -1,13 +1,13 @@
 {
-    "name": "mettle-seed",
+    "name": "mettle-boilerplate",
     "version": "0.1.0",
-    "description": "Mettle MVC Frameowrk Boilerplate",
+    "description": "Mettle MVC Framework Boilerplate",
     "main": " ",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "test": "echo \"Run through Karma\" && exit 1"
+        "test": "karma start test/unit-karma/karma.conf.js --single-run"
     },
     "author": "Manish Shanker",
     "license": "APACHE",
