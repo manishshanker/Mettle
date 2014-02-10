@@ -1,0 +1,88 @@
+<project name="build" default="package" basedir=".\..">
+
+    <property name="jsSource" value="${basedir}\src\js"/>
+    <property name="outputDir" value="${basedir}\out"/>
+
+    <taskdef name="yuicompress" classname="com.yahoo.platform.yui.compressor.YUICompressTask">
+        <classpath>
+            <pathelement path="${basedir}\build\jars\YUIAnt.jar"/>
+            <pathelement path="${basedir}\build\jars\yuicompressor-2.4.7.jar"/>
+            <pathelement path="${basedir}\build\jars\js.jar"/>
+        </classpath>
+    </taskdef>
+
+    <tstamp>
+        <format property="TIMESTAMP" pattern="ddMMyyyyHHmmss" locale="en,UK"/>
+    </tstamp>
+
+    <target name="package" depends="clean, build"></target>
+
+    <target name="clean">
+        <delete dir="${outputDir}"/>
+    </target>
+
+    <target name="build" depends="copy-source-to-build-folder, merge-js, minify-js, add-build-timestamp, copy-to-boiler-plate"></target>
+
+    <target name="copy-source-to-build-folder">
+        <echo message="${outputDir}"/>
+        <echo message="${baseDir}"/>
+        <mkdir dir="${outputDir}"/>
+        <copy todir="${outputDir}">
+            <fileset dir="${basedir}\src"/>
+        </copy>
+    </target>
+
+    <target name="merge-js">
+        <sequential>
+        <echo message="BEGIN: JS MERGE"/>
+        <concat destfile="${outputDir}\js\Mettle.js" fixlastline="true">
+            <union>
+                <fileset dir="${jsSource}" casesensitive="false" includes="copyright.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="baseClass/namespace.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="DOM.js" />
+                <fileset dir="${jsSource}" casesensitive="false" includes="classExtend.js" />
+                <fileset dir="${jsSource}" casesensitive="false" includes="utility.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="messaging.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="baseClass/Base.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="**/*.js" />
+                <fileset dir="${jsSource}" casesensitive="false" includes="*.js" />
+            </union>
+        </concat>
+        <delete dir="${outputDir}\js" includeemptydirs="true" excludes="Mettle.js"/>
+        <echo message="END: JS MERGE"/>
+        </sequential>
+    </target>
+
+    <target name="minify-js">
+        <echo message="BEGIN: JS MINIFY"/>
+        <copy file="${outputDir}\js\Mettle.js" toFile="${outputDir}\js\Mettle.min.js"/>
+        <yuicompress linebreak="300"
+                     warn="false"
+                     munge="yes"
+                     preserveallsemicolons="true"
+                     outputfolder="${outputDir}\js\">
+            <fileset dir="${outputDir}\js\">
+                <include name="Mettle.min.js"/>
+            </fileset>
+        </yuicompress>
+        <echo message="END: JS MINIFY"/>
+    </target>
+
+    <target name="add-build-timestamp">
+        <echo message="BEGIN: ADD BUILD TIMESTAMP"/>
+        <replaceregexp file="${outputDir}\js\Mettle.min.js"
+                       match="(__TIMESTAMP__)"
+                       flags="gs"
+                       replace="${TIMESTAMP}"/>
+        <replaceregexp file="${outputDir}\js\Mettle.js"
+                       match="(__TIMESTAMP__)"
+                       flags="gs"
+                       replace="${TIMESTAMP}"/>
+        <echo message="END: ADD BUILD TIMESTAMP"/>
+    </target>
+
+    <target name="copy-to-boiler-plate">
+        <copy file="${outputDir}\js\Mettle.min.js" toFile="${outputDir}\..\..\mettle-boilerplate\src\lib\js\vendor\Mettle.min.js" />
+    </target>
+
+</project>

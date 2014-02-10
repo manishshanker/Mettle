@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>
+<html class="no-js lt-ie9 lt-ie8 lt-ie7"><![endif]-->
+<!--[if IE 7]>
+<html class="no-js lt-ie9 lt-ie8"><![endif]-->
+<!--[if IE 8]>
+<html class="no-js lt-ie9"><![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js"><!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>&lt;Your Application Title&gt;</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!--MERGE STYLES-->
+    <link rel="stylesheet" href="lib/css/normalize.css">
+    <link rel="stylesheet" href="lib/css/news.css">
+    <link rel="stylesheet" href="lib/css/navigation.css">
+    <link rel="stylesheet" href="lib/css/main.css">
+    <!--/MERGE STYLES-->
+
+    <script src="lib/js/vendor/---modernizr-2.6.2.min.js"></script>
+
+</head>
+<body>
+<div id="mainContent">
+    <header>
+        <h1>Mettle - HTML5 Application Framework</h1>
+        <nav>
+            <ul>
+                <li>
+                    <a href="#/introduction">Introduction</a>
+                </li><li>
+                    <a href="#/documentation">Documentation</a>
+                </li><li>
+                    <a href="#/example">Example</a>
+                </li><li>
+                    <a href="#/plugins">Plug-in Library</a>
+                </li><li>
+                    <a href="#/otherFrameworks">Other Frameworks</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="page-content">
+        <section class="page" id="introduction">
+            <h2>Introduction</h2>
+        </section>
+
+        <section class="page" id="example">
+            <h2>Below is an example application</h2>
+
+            <div class="news">
+                <div id="newsList">
+                    <script id="tmplNewsList" type="text/x-handlebars-template">
+                        {{#list this}}<a id="newsItem_{{id}}" href="#/example/news/{{id}}">{{title}}</a>{{/list}}
+                    </script>
+                </div>
+                <div id="newsDetail"></div>
+            </div>
+        </section>
+
+        <section class="page" id="documentation">
+            <h2>Documentation</h2>
+        </section>
+
+        <section class="page" id="plugins">
+            <h2>Plugins</h2>
+            <ul>
+                <li>SmartDataGrid</li>
+                <li>Doughnut and Pie Chart</li>
+                <li>Numeric range input</li>
+                <li>Message inbox</li>
+                <li>Plant info-graphics</li>
+                <li>Circular relationship graph</li>
+
+
+                <li>Real-time Grid</li>
+                <li>Real-time Mobile Application</li>
+            </ul>
+        </section>
+
+        <section class="page" id="otherFrameworks">
+            <h2>Other Frameworks</h2>
+            <ul>
+                <li>Keel</li>
+                <li>AngularJS</li>
+                <li>Backbone</li>
+                <li>jQuery UI</li>
+                <li>Ember</li>
+                <li>Kendo UI</li>
+            </ul>
+        </section>
+    </div>
+
+    <script src="lib/js/app/i18n/en_GB.js"></script>
+    <script>
+	    Mettle_Template_LOAD_BY_URL_DEFAULT_PATH = "lib/templates"
+    </script>
+
+    <!--MERGE SCRIPTS-->
+    <script src="lib/js/vendor/zepto.min.js"></script>
+    <script src="lib/js/vendor/handlebars-v1.1.2.js"></script>
+    <script src="lib/js/vendor/Mettle.min.js"></script>
+
+	<script src="lib/js/app/namespace.js"></script>
+	<script src="lib/js/app/serviceURLs.js"></script>
+
+	<script src="lib/js/app/modules/News/controls/newsDetail/NewsDetail.controller.js"></script>
+	<script src="lib/js/app/modules/News/controls/newsDetail/NewsDetail.dependency.js"></script>
+    <script src="lib/js/app/modules/News/controls/newsDetail/NewsDetail.view.js"></script>
+    <script src="lib/js/app/modules/News/controls/newsList/NewsList.controller.js"></script>
+    <script src="lib/js/app/modules/News/controls/newsList/NewsList.view.js"></script>
+    <script src="lib/js/app/modules/News/News.controller.js"></script>
+    <script src="lib/js/app/modules/News/controls/newsList/NewsList.service.js"></script>
+    <script src="lib/js/app/modules/News/controls/newsDetail/NewsDetail.service.js"></script>
+
+	<script src="../test/mockServices/NewsList.service.js"></script>
+
+	<script src="lib/js/app/appCache.js"></script>
+	<script src="lib/js/app/main.js"></script>
+    <!--/MERGE SCRIPTS-->
+
+</div>
+</body>
+</html>

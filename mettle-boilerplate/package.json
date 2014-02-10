@@ -1,0 +1,25 @@
+{
+    "name": "mettle-seed",
+    "version": "0.1.0",
+    "description": "Mettle MVC Frameowrk Boilerplate",
+    "main": " ",
+    "directories": {
+        "test": "test"
+    },
+    "scripts": {
+        "test": "echo \"Run through Karma\" && exit 1"
+    },
+    "author": "Manish Shanker",
+    "license": "APACHE",
+    "devDependencies": {
+        "karma": "~0.10.8",
+        "karma-coverage": "0.1.2",
+        "karma-teamcity-reporter": "0.1.1",
+        "phantomjs": "1.9.1-0",
+        "karma-phantomjs-launcher": "0.1.1",
+        "selenium-webdriver": "2.39.0",
+        "mocha":"1.16.2",
+        "asyncblock": "2.1.14",
+        "connect": "2.12.0"
+    }
+}

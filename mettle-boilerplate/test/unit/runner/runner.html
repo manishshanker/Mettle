@@ -1,0 +1,58 @@
+<html>
+<head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" href="mocha.css"/>
+
+    <script src="require.js"></script>
+    <script src="mocha.js"></script>
+    <script src="chai.js"></script>
+    <script src="sinon.js"></script>
+    <script src="sinon-chai.js"></script>
+    <script src="mochaSimpleReporter.js"></script>
+    <script type="text/javascript">
+
+        function changeListener() {
+            if (location.href.indexOf("watch")>-1) {
+                setTimeout(function () {
+                    var script = document.createElement("script");
+                    script.src = "live.js";
+                    script.async = false;
+                    document.getElementsByTagName("head")[0].appendChild(script);
+                }, 300);
+            }
+        }
+
+        mocha.setup({
+            ui:'bdd',
+            reporter:function (runner) {
+                var isPhantomJS = (navigator.userAgent.indexOf("PhantomJS")>-1);
+                var isTeamcity = location.href.indexOf("teamcity")>-1;
+                new mocha.reporters.simpleReporter(runner, changeListener);
+                if (!isPhantomJS) {
+                    new mocha.reporters.HTML(runner);
+                }
+                if (isPhantomJS && isTeamcity) {
+                    new mocha.reporters.Teamcity(runner);
+                }
+                //new mocha.reporters.XUnit(runner);
+            },
+            ignoreLeaks:true,
+            timeout:5000 // ms
+        });
+        expect = chai.expect;
+
+    </script>
+    <script src="../config.js"></script>
+    <script src="../suite.js"></script>
+</head>
+<body>
+<div id="mocha"></div>
+<div id="fragments"></div>
+<script>
+    setTimeout(function () {
+        mocha.run();
+    }, 1000);
+</script>
+</body>
+</html>

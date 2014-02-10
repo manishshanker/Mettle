@@ -1,0 +1,170 @@
+<project name="build" default="package" basedir=".\..">
+
+    <property name="jsSource" value="${basedir}\src\lib\js\app"/>
+    <property name="jsLibSource" value="${basedir}\src\lib\js\vendor"/>
+    <property name="cssSource" value="${basedir}\src\lib\css"/>
+    <property name="outputDir" value="${basedir}\out"/>
+    <property name="outputHtmlFile" value="${outputDir}\index.html"/>
+
+    <taskdef name="yuicompress" classname="com.yahoo.platform.yui.compressor.YUICompressTask">
+        <classpath>
+            <pathelement path="${basedir}\build\jars\YUIAnt.jar"/>
+            <pathelement path="${basedir}\build\jars\yuicompressor-2.4.7.jar"/>
+            <pathelement path="${basedir}\build\jars\js.jar"/>
+        </classpath>
+    </taskdef>
+
+    <tstamp>
+        <format property="TIMESTAMP" pattern="ddMMyyyyHHmmss" locale="en,UK"/>
+    </tstamp>
+
+    <target name="package" depends="clean, build"></target>
+
+    <target name="clean">
+        <delete dir="${outputDir}"/>
+    </target>
+
+    <target name="build" depends="copy-source-to-build-folder, copy-mock-services-to-build-folder, merge-css, minify-css, update-css-reference, merge-js, minify-js, update-js-reference, add-timestamp-to-path, generate-manifest"></target>
+
+    <target name="copy-source-to-build-folder">
+        <echo message="${outputDir}"/>
+        <echo message="${baseDir}"/>
+        <mkdir dir="${outputDir}"/>
+        <mkdir dir="${outputDir}\mockServices"/>
+        <copy todir="${outputDir}">
+            <fileset dir="${basedir}\src"/>
+        </copy>
+    </target>
+
+    <target name="copy-mock-services-to-build-folder" depends="mockServicesCheck" if="mockServicesExist">
+        <copy todir="${outputDir}\mockServices">
+            <fileset dir="${basedir}\test\mockServices"/>
+        </copy>
+    </target>
+
+    <target name="mockServicesCheck">
+        <condition property="mockServicesExist">
+            <available file="${basedir}\test\mockServices" type="dir"/>
+        </condition>
+    </target>
+
+    <target name="merge-js">
+        <sequential>
+        <echo message="BEGIN: JS MERGE"/>
+        <concat destfile="${outputDir}\lib\js\combined.js" fixlastline="true">
+            <union>
+                <fileset dir="${jsLibSource}" casesensitive="false" includes="zepto.min.js"/>
+                <fileset dir="${jsLibSource}" casesensitive="false" includes="handlebars-v1.1.2.js"/>
+                <fileset excludes="**/---*" dir="${jsLibSource}" casesensitive="false" includes="**/*.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="namespace.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="serviceURLs.js"/>
+                <fileset excludes="**/---*" dir="${jsSource}" casesensitive="false" includes="modules/**/*.js" />
+                <fileset excludes="**/---*" dir="${outputDir}\mockServices" casesensitive="false" includes="**/*.js"/>
+                <fileset excludes="**/---*" dir="${jsSource}" casesensitive="false" includes="*.js" />
+            </union>
+        </concat>
+        <delete dir="${outputDir}\lib\js" includeemptydirs="true" includes="**/*.js" excludes="combined.js, **/---*, **/i18n/*"/>
+        <delete dir="${outputDir}\mockServices" includeemptydirs="true"/>
+        <echo message="END: JS MERGE"/>
+        </sequential>
+    </target>
+
+    <target name="minify-js">
+        <echo message="BEGIN: JS MINIFY"/>
+        <yuicompress linebreak="300"
+                     warn="false"
+                     munge="yes"
+                     preserveallsemicolons="true"
+                     outputfolder="${outputDir}\lib\js\">
+            <fileset dir="${outputDir}\lib\js\">
+                <include name="combined.js"/>
+            </fileset>
+        </yuicompress>
+        <echo message="END: JS MINIFY"/>
+    </target>
+
+    <target name="update-js-reference">
+        <echo message="BEGIN: UPDATE JS REFERENCE"/>
+        <replaceregexp file="${outputHtmlFile}"
+                       match="&lt;\!--MERGE\sSCRIPTS(.+?)&lt;\!--/MERGE\sSCRIPTS--&gt;"
+                       flags="gs"
+                       replace="&lt;script src='lib/js/combined.js' &gt;&lt;/script&gt;"/>
+        <echo message="END: UPDATE JS REFERENCE"/>
+    </target>
+
+    <target name="merge-css">
+        <sequential>
+        <echo message="BEGIN: CSS MERGE"/>
+        <concat destfile="${outputDir}\lib\css\combined.css" fixlastline="true">
+            <union>
+                <fileset dir="${cssSource}" casesensitive="false" includes="normalize.css"/>
+                <fileset dir="${cssSource}" casesensitive="false" includes="main.css"/>
+                <fileset dir="${cssSource}" casesensitive="false" includes="**\*.css"/>
+            </union>
+        </concat>
+        <replaceregexp file="${outputDir}\lib\css\combined.css"
+                       match="@import\s&quot;(.+?)&quot;;"
+                       flags="gs"
+                       replace=""/>
+        <delete dir="${outputDir}\lib\css" excludes="combined*.css" includeemptydirs="true"/>
+        <echo message="END: CSS MERGE"/>
+        </sequential>
+    </target>
+
+    <target name="compile-less-css">
+        <sequential>
+            <echo message="BEGIN: CSS LESS COMPILE"/>
+            <java jar="${basedir}\build\jars\js.jar" fork="true" output="${outputDir}\lib\css\combined.css">
+                <arg path="${basedir}\build\jars\less-rhino-1.1.3.js"/>
+                <arg path="${outputDir}\lib\css\combined.less"/>
+            </java>
+            <echo message="END: CSS LESS COMPILE"/>
+        </sequential>
+    </target>
+
+    <target name="minify-css">
+        <yuicompress linebreak="300" warn="false" munge="yes" preserveallsemicolons="true"
+                     outputfolder="${outputDir}\lib\css">
+            <fileset dir="${outputDir}\lib\css" >
+                <include name="combine*.css" />
+            </fileset>
+        </yuicompress>
+    </target>
+
+    <target name="update-css-reference">
+        <echo message="BEGIN: CSS REFERENCE UPDATE"/>
+        <replaceregexp file="${outputHtmlFile}"
+                       match="&lt;\!--MERGE\sSTYLES(.+?)&lt;\!--/MERGE\sSTYLES--&gt;"
+                       flags="gs"
+                       replace="&lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;lib/css/combined.css&quot; /&gt;"/>
+        <echo message="END: CSS REFERENCE UPDATE"/>
+    </target>
+
+    <target name="add-timestamp-to-path">
+        <echo message="BEGIN: ADD TIMESTAMP (${TIMESTAMP}) TO PATH"/>
+        <move file="${outputDir}\lib" tofile="${outputDir}\${TIMESTAMP}"/>
+        <replaceregexp file="${outputHtmlFile}"
+                       match="lib/"
+                       flags="gs"
+                       replace="${TIMESTAMP}/"/>
+        <echo message="END: ADD TIMESTAMP TO PATH"/>
+    </target>
+
+    <target name="generate-manifest">
+        <echo message="BEGIN: MANIFEST GENERATION"/>
+        <pathconvert pathsep="${line.separator}" dirsep="\" property="files">
+            <fileset id="fileList" dir="${outputDir}" excludes="*.appcache"/>
+            <chainedmapper>
+                <regexpmapper from="out.(.*)" to="\1"/>
+            </chainedmapper>
+        </pathconvert>
+        <replace file="${outputDir}\application.appcache" token="@files@" value="${files}"/>
+        <replace file="${outputDir}\application.appcache" token="@timestamp@" value="${TIMESTAMP}"/>
+        <replaceregexp file="${outputHtmlFile}"
+                       match="&lt;html\s"
+                       flags="gs"
+                       replace="&lt;html manifest=&quot;application.appcache&quot; "/>
+        <echo message="END: MANIFEST GENERATION"/>
+    </target>
+
+</project>
