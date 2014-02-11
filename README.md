@@ -1,4 +1,4 @@
-Mettle [![Build Status](https://travis-ci.org/manishshanker/Mettle.png?branch=master)](https://travis-ci.org/manishshanker/Mettle)
+Mettle [![Build Status](https://api.travis-ci.org/manishshanker/Mettle.png?branch=master)](https://travis-ci.org/manishshanker/Mettle)
 ======
 
 Mettle - MVC Framework for HTML5 Web Application
