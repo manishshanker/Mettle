@@ -65,8 +65,8 @@
 
     function getDependencyInstance(ctx, key, dependency) {
         if (ctx.injector) {
-            Mettle.Module.dependency = Mettle.Module.dependency || {};
-            var depInjector = Mettle.Module.dependency[ctx.injector];
+            Mettle.ModuleNameSpace.dependency = Mettle.ModuleNameSpace.dependency || {};
+            var depInjector = Mettle.ModuleNameSpace.dependency[ctx.injector];
             if (depInjector) {
                 if (depInjector[key][dependency]) {
                     return depInjector[key][dependency](ctx);
@@ -90,13 +90,13 @@
             }
         }
         var moduleNameSpace = TYPES[type];
-        Mettle.Module[moduleNameSpace] = Mettle.Module[moduleNameSpace] || {};
+        Mettle.ModuleNameSpace[moduleNameSpace] = Mettle.ModuleNameSpace[moduleNameSpace] || {};
         if (type === "templates") {
-            if (Mettle.Module.template[capitalise(dependency)]) {
-                return new Mettle.Module.template[capitalise(dependency)]();
+            if (Mettle.ModuleNameSpace.template[capitalise(dependency)]) {
+                return new Mettle.ModuleNameSpace.template[capitalise(dependency)]();
             }
-            if (Mettle.Module.template[dependency]) {
-                return Mettle.Module.template[dependency];
+            if (Mettle.ModuleNameSpace.template[dependency]) {
+                return Mettle.ModuleNameSpace.template[dependency];
             }
             if (dependency.indexOf("tmpl!") === 0) {
                 return Mettle.TemplateByURL(dependency.substr(5));
@@ -104,7 +104,7 @@
             return Mettle.TemplateByID("tmpl" + capitalise(dependency));
         }
         try {
-            return new Mettle.Module[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+            return new Mettle.ModuleNameSpace[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
         } catch (e) {
             Mettle.errorLogger(e);
             throw new Error("Dependency instance creation error: (" + type + "," + dependency + " | " + moduleNameSpace + "." + (capitalise(dependency)) + ")");

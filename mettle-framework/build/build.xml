@@ -38,8 +38,9 @@
         <concat destfile="${outputDir}\js\Mettle.js" fixlastline="true">
             <union>
                 <fileset dir="${jsSource}" casesensitive="false" includes="copyright.js"/>
-                <fileset dir="${jsSource}" casesensitive="false" includes="baseClass/namespace.js"/>
+                <fileset dir="${jsSource}" casesensitive="false" includes="config.js"/>
                 <fileset dir="${jsSource}" casesensitive="false" includes="DOM.js" />
+                <fileset dir="${jsSource}" casesensitive="false" includes="moduleManager.js"/>
                 <fileset dir="${jsSource}" casesensitive="false" includes="classExtend.js" />
                 <fileset dir="${jsSource}" casesensitive="false" includes="utility.js"/>
                 <fileset dir="${jsSource}" casesensitive="false" includes="messaging.js"/>
@@ -81,8 +82,12 @@
         <echo message="END: ADD BUILD TIMESTAMP"/>
     </target>
 
-    <target name="copy-to-boiler-plate">
+    <target name="copy-to-boiler-plate" depends="copy-to-project-folder">
         <copy file="${outputDir}\js\Mettle.min.js" toFile="${outputDir}\..\..\mettle-boilerplate\src\lib\js\vendor\Mettle.min.js" />
+    </target>
+
+    <target name="copy-to-project-folder">
+        <copy file="${outputDir}\js\Mettle.min.js" toFile="D:\Dev\facetedSearch\src\lib\js\vendor\Mettle.min.js" />
     </target>
 
 </project>

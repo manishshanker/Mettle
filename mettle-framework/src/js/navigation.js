@@ -4,7 +4,6 @@
     var currentView;
     var currentPath;
     var viewState = {};
-    var restoringState = false;
     var dView = "#/home";
 
     var Navigation = function () {
@@ -21,6 +20,7 @@
 
         function onLocationChange() {
             currentPath = location.hash;
+            var redirect = false;
             var appStateData = parseLocationData(currentPath);
             if (!appStateData) {
                 location.href = "#/" + dView;
@@ -29,18 +29,18 @@
             if (appStateData.page !== currentView) {
                 hidePage(currentView, appStateData);
                 currentView = appStateData.page;
-                showPage(currentView, appStateData);
-            }
-            var newAppStateData = parseLocationData(location.hash);
-            if (!restoringState) {
-                if (!isKeepOldState(currentView) || isNotSameState(newAppStateData)) {
-                    publishStateUpdate(newAppStateData);
+                redirect = showPage(currentView, appStateData);
+                if (redirect) {
+                    return;
                 }
             }
-            viewState[currentView] = appStateData;
-            window.setTimeout(function () {
-                restoringState = false;
-            }, 200);
+            var newAppStateData = parseLocationData(location.hash);
+            currentView = newAppStateData.page;
+
+            if (!isKeepOldState(currentView) || isNotSameState(newAppStateData)) {
+                publishStateUpdate(newAppStateData);
+                viewState[currentView] = appStateData;
+            }
         }
 
         function isNotSameState(newAppStateData) {
@@ -60,7 +60,6 @@
             }
         }
 
-
         function showPage(page, appStateData) {
             $("#" + page).addClass("page-visible");
             var $link = getPageLink(page);
@@ -69,20 +68,25 @@
             if (cachedViewState) {
                 if (cachedViewState.pageData) {
                     location.replace("#/" + page + "/" + cachedViewState.pageData);
-                    if (isKeepOldState(page)) {
-                        restoringState = true;
-                    }
+                    appStateData.redirecting = true;
+                    Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+                    return true;
                 }
             }
-            if (!restoringState) {
-                Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
-            }
+            appStateData.redirecting = true;
+            Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+            return false;
         }
 
         function isKeepOldState(page) {
-            var keepState = getPageLink(page).attr("data-keep-state");
+            var keepState = getPageContainer(page).attr("data-keep-state");
             return !(keepState === false || keepState === "false");
         }
+
+        function getPageContainer(page) {
+            return $("#" + page);
+        }
+
 
         function getPageLink(page) {
             return $("a[href$='#/" + page + "']");

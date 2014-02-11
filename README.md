@@ -27,7 +27,7 @@ UTILITIES
             modules/    --> all module code
             appCache.js --> for handling HTML5 app cache
             main.js     --> main file where execution begins
-            namespace   --> holds the namespace for the project
+            config.js   --> holds the namespace for the project and other global configs
             serviceURLs --> holds list of all urls required by modules
           vendor/
         templates/      --> holds all templates, default handlebars

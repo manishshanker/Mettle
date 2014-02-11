@@ -16,17 +16,14 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 09022014170923
+ * @buildTimestamp 11022014235644
  */
 (function (Mettle, window) {
     "use strict";
 
-    window.Mettle = Mettle = Mettle || {};
-
-    Mettle.init = function (appNameSpace, locale) {
-        Mettle.i18nT = locale;
-        Mettle.Module = appNameSpace || {};
-    };
+    window.Mettle = Mettle || {};
+    window.Mettle_Template_LOAD_BY_URL_DEFAULT_PATH = window.Mettle_Template_LOAD_BY_URL_DEFAULT_PATH || "";
+    window.Mettle_Template_LOAD_BY_URL_DEFAULT_EXTENSION = window.Mettle_Template_LOAD_BY_URL_DEFAULT_EXTENSION || ".hbs";
 
 }(window.Mettle, window));
 (function (Mettle, $) {
@@ -99,6 +96,64 @@
     Mettle.DOM = MettleDOM;
 
 }(Mettle,  (window.Zepto || window.jQuery)));
+(function(Mettle, $) {
+    "use strict";
+
+    Mettle.init = function (appNameSpace, locale, logLevel) {
+        Mettle.i18nT = locale;
+        Mettle.ModuleNameSpace = appNameSpace || {};
+        Mettle.LOGGER_LEVEL.CURRENT = logLevel || Mettle.LOGGER_LEVEL.WARN;
+        return Mettle;
+    };
+
+    Mettle.modules = function(modules) {
+        Mettle.each(modules, function (ModuleClass) {
+            new ModuleClass().load();
+        });
+        return Mettle;
+    };
+
+    Mettle.managedModules = function(modules) {
+        var content = {};
+        var destroyedModule = {};
+        Mettle.each(modules, function (ModuleClass, moduleName) {
+
+            var $moduleContainer = $("#" + moduleName);
+            $moduleContainer.attr("data-keep-state", "false");
+            var module = new ModuleClass();
+            content[moduleName] = content[moduleName] || $moduleContainer.html();
+
+            Mettle.messaging.subscribe("navigationChangedFrom:" + moduleName, function () {
+                Mettle.infoLogger("destroying module:" + moduleName);
+                module.destroy();
+                $moduleContainer.empty();
+                destroyedModule[moduleName] = true;
+            });
+
+            Mettle.messaging.subscribe("navigationChangedTo:" + moduleName, function (data) {
+                if (destroyedModule[moduleName]) {
+                    Mettle.infoLogger("loading destroyed module:" + moduleName);
+                    $moduleContainer.html(content[moduleName]);
+                    module = new ModuleClass();
+                    module.load();
+                    if (!data.redirecting) {
+                        Mettle.messaging.publish("navigationStateChange:" + moduleName, data);
+                    }
+                } else {
+                    module.load();
+                }
+                destroyedModule[moduleName] = false;
+            });
+        });
+        return Mettle;
+    };
+
+    Mettle.start = function(defaultPage) {
+        Mettle.navigation.load(defaultPage);
+        return Mettle;
+    };
+
+}(Mettle, Mettle.DOM));
 (function () {
     "use strict";
 
@@ -140,18 +195,35 @@
 
     Mettle.noop = noop;
     Mettle.each = each;
-    Mettle.infoLogger = (window.console && window.console.log && function () {
-        console.info.apply(console, arguments);
-    }) || Mettle.noop;
-    Mettle.logger = (window.console && window.console.log && function () {
-        console.log.apply(console, arguments);
-    }) || Mettle.noop;
-    Mettle.errorLogger = (window.console && window.console.log && function () {
-        console.error.apply(console, arguments);
-    }) || Mettle.noop;
-    Mettle.warningLogger = (window.console && window.console.log && function () {
-        console.warn.apply(console, arguments);
-    }) || Mettle.noop;
+
+
+    Mettle.LOGGER_LEVEL = {
+        ERROR: 1,
+        WARN: 2,
+        INFO: 4,
+        LOG: 8,
+        ALL: 16,
+        OFF: -1,
+        CURRENT: 1
+    };
+
+    function getLogger(type) {
+        return (window.console && window.console.log && function () {
+            if (Mettle.LOGGER_LEVEL.CURRENT >= Mettle.LOGGER_LEVEL[type.toUpperCase()]) {
+                if (console.log.apply) {
+                    (console[type]?console[type]:console.log).apply(console, arguments);
+                } else {
+                    (console[type]?console[type]:console.log)(arguments);
+                }
+            }
+        }) || Mettle.noop;
+    }
+
+    Mettle.infoLogger = getLogger("info");
+    Mettle.logger = getLogger("log");
+    Mettle.errorLogger = getLogger("error");
+    Mettle.warningLogger = getLogger("warn");
+
 
     function each(data, callback) {
         if (data) {
@@ -193,12 +265,12 @@
     var Messaging = function () {
         this.guid = guid();
         this.localMessageBus = $({});
-//        Mettle.infoLogger("messageBus._____create", this.guid);
+        Mettle.infoLogger("messageBus._____create", this.guid);
     };
 
     Messaging.prototype = {
         publish: function (subject, message) {
-//            Mettle.infoLogger("messageBus.____publish", this.guid, subject, message);
+            Mettle.infoLogger("messageBus.____publish", this.guid, subject, message);
             this.localMessageBus.trigger(subject, [message]);
         },
         subscribe: function (scope, subjects, fn) {
@@ -207,7 +279,7 @@
                 subjects = scope;
                 scope = window;
             }
-//            Mettle.infoLogger("messageBus.__subscribe", this.guid, subjects);
+            Mettle.infoLogger("messageBus.__subscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 return getSubsricber(that, fn, scope, subjects);
@@ -219,7 +291,7 @@
             return subscriberFNs;
         },
         unsubscribe: function (subjects, fn) {
-//            Mettle.infoLogger("messageBus.unsubscribe", this.guid, subjects);
+            Mettle.infoLogger("messageBus.unsubscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 that.localMessageBus.off(subjects, fn);
@@ -233,6 +305,7 @@
 
     function getSubsricber(ctx, fn, scope, subject) {
         var unsubscribeMethod = function (e, message) {
+            Mettle.infoLogger("messageBus.___received", subject, message);
             fn.call(scope, message);
         };
         ctx.localMessageBus.on(subject, unsubscribeMethod);
@@ -418,6 +491,7 @@
         loopMethods(ctx.views, "destroy");
         loopMethods(ctx.controls, "destroy");
         loopMethods(ctx.services, "destroy");
+        loopMethods(ctx.templates, "destroy");
         ctx.services = null;
         ctx.views = null;
         ctx.lastStateData = null;
@@ -429,18 +503,21 @@
     }
 
     function destroyControlMessages(ctx) {
-        if (ctx.controlMessages) {
+        if (ctx._controlMessagesFn) {
             var controlMessages = ctx.controlMessages;
-            Mettle.messaging.unsubscribe(controlMessages.show);
-            Mettle.messaging.unsubscribe(controlMessages.hide);
-            Mettle.messaging.unsubscribe(controlMessages.stateChange);
+            var controlMessagesFn = ctx._controlMessagesFn;
+            Mettle.each(["show", "hide", "stateChange"], function(item) {
+                Mettle.messaging.unsubscribe(controlMessages[item], controlMessagesFn[item]);
+            });
         }
     }
 
     function destroyMessages(ctx) {
-        Mettle.each(ctx.messages, function (item) {
-            Mettle.messaging.unsubscribe(item);
-        });
+        if (ctx._messagesFn) {
+            Mettle.each(ctx.messages, function (item, key) {
+                Mettle.messaging.unsubscribe(item, ctx._messagesFn(key));
+            });
+        }
     }
 
     function renderTemplates(ctx, data) {
@@ -479,16 +556,19 @@
         }
         destroyControlMessages(ctx);
         var messages = ctx.controlMessages;
-        Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
-        Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
-        Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
+        ctx._controlMessagesFn = {};
+        ctx._controlMessagesFn.show = Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
+        ctx._controlMessagesFn.hide = Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
+        ctx._controlMessagesFn.stateChange = Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
             ctx.lastStateData = stateData;
             Mettle.each(ctx.onRouteChange(stateData), function (item, key) {
                 Mettle.navigation.route(ctx, key, item);
             });
         });
+        destroyMessages(ctx);
+        ctx._messagesFn = {};
         Mettle.each(ctx.messages, function (message, key) {
-            Mettle.messaging.subscribe(ctx, key, message);
+            ctx._messagesFn[key] = Mettle.messaging.subscribe(ctx, key, message);
         });
     }
 
@@ -786,8 +866,8 @@
 
     function getDependencyInstance(ctx, key, dependency) {
         if (ctx.injector) {
-            Mettle.Module.dependency = Mettle.Module.dependency || {};
-            var depInjector = Mettle.Module.dependency[ctx.injector];
+            Mettle.ModuleNameSpace.dependency = Mettle.ModuleNameSpace.dependency || {};
+            var depInjector = Mettle.ModuleNameSpace.dependency[ctx.injector];
             if (depInjector) {
                 if (depInjector[key][dependency]) {
                     return depInjector[key][dependency](ctx);
@@ -811,13 +891,13 @@
             }
         }
         var moduleNameSpace = TYPES[type];
-        Mettle.Module[moduleNameSpace] = Mettle.Module[moduleNameSpace] || {};
+        Mettle.ModuleNameSpace[moduleNameSpace] = Mettle.ModuleNameSpace[moduleNameSpace] || {};
         if (type === "templates") {
-            if (Mettle.Module.template[capitalise(dependency)]) {
-                return new Mettle.Module.template[capitalise(dependency)]();
+            if (Mettle.ModuleNameSpace.template[capitalise(dependency)]) {
+                return new Mettle.ModuleNameSpace.template[capitalise(dependency)]();
             }
-            if (Mettle.Module.template[dependency]) {
-                return Mettle.Module.template[dependency];
+            if (Mettle.ModuleNameSpace.template[dependency]) {
+                return Mettle.ModuleNameSpace.template[dependency];
             }
             if (dependency.indexOf("tmpl!") === 0) {
                 return Mettle.TemplateByURL(dependency.substr(5));
@@ -825,7 +905,7 @@
             return Mettle.TemplateByID("tmpl" + capitalise(dependency));
         }
         try {
-            return new Mettle.Module[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+            return new Mettle.ModuleNameSpace[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
         } catch (e) {
             Mettle.errorLogger(e);
             throw new Error("Dependency instance creation error: (" + type + "," + dependency + " | " + moduleNameSpace + "." + (capitalise(dependency)) + ")");
@@ -932,7 +1012,6 @@
     var currentView;
     var currentPath;
     var viewState = {};
-    var restoringState = false;
     var dView = "#/home";
 
     var Navigation = function () {
@@ -949,6 +1028,7 @@
 
         function onLocationChange() {
             currentPath = location.hash;
+            var redirect = false;
             var appStateData = parseLocationData(currentPath);
             if (!appStateData) {
                 location.href = "#/" + dView;
@@ -957,18 +1037,18 @@
             if (appStateData.page !== currentView) {
                 hidePage(currentView, appStateData);
                 currentView = appStateData.page;
-                showPage(currentView, appStateData);
-            }
-            var newAppStateData = parseLocationData(location.hash);
-            if (!restoringState) {
-                if (!isKeepOldState(currentView) || isNotSameState(newAppStateData)) {
-                    publishStateUpdate(newAppStateData);
+                redirect = showPage(currentView, appStateData);
+                if (redirect) {
+                    return;
                 }
             }
-            viewState[currentView] = appStateData;
-            window.setTimeout(function () {
-                restoringState = false;
-            }, 200);
+            var newAppStateData = parseLocationData(location.hash);
+            currentView = newAppStateData.page;
+
+            if (!isKeepOldState(currentView) || isNotSameState(newAppStateData)) {
+                publishStateUpdate(newAppStateData);
+                viewState[currentView] = appStateData;
+            }
         }
 
         function isNotSameState(newAppStateData) {
@@ -988,7 +1068,6 @@
             }
         }
 
-
         function showPage(page, appStateData) {
             $("#" + page).addClass("page-visible");
             var $link = getPageLink(page);
@@ -997,20 +1076,25 @@
             if (cachedViewState) {
                 if (cachedViewState.pageData) {
                     location.replace("#/" + page + "/" + cachedViewState.pageData);
-                    if (isKeepOldState(page)) {
-                        restoringState = true;
-                    }
+                    appStateData.redirecting = true;
+                    Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+                    return true;
                 }
             }
-            if (!restoringState) {
-                Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
-            }
+            appStateData.redirecting = true;
+            Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+            return false;
         }
 
         function isKeepOldState(page) {
-            var keepState = getPageLink(page).attr("data-keep-state");
+            var keepState = getPageContainer(page).attr("data-keep-state");
             return !(keepState === false || keepState === "false");
         }
+
+        function getPageContainer(page) {
+            return $("#" + page);
+        }
+
 
         function getPageLink(page) {
             return $("a[href$='#/" + page + "']");

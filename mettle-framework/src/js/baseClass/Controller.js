@@ -134,6 +134,7 @@
         loopMethods(ctx.views, "destroy");
         loopMethods(ctx.controls, "destroy");
         loopMethods(ctx.services, "destroy");
+        loopMethods(ctx.templates, "destroy");
         ctx.services = null;
         ctx.views = null;
         ctx.lastStateData = null;
@@ -145,18 +146,21 @@
     }
 
     function destroyControlMessages(ctx) {
-        if (ctx.controlMessages) {
+        if (ctx._controlMessagesFn) {
             var controlMessages = ctx.controlMessages;
-            Mettle.messaging.unsubscribe(controlMessages.show);
-            Mettle.messaging.unsubscribe(controlMessages.hide);
-            Mettle.messaging.unsubscribe(controlMessages.stateChange);
+            var controlMessagesFn = ctx._controlMessagesFn;
+            Mettle.each(["show", "hide", "stateChange"], function(item) {
+                Mettle.messaging.unsubscribe(controlMessages[item], controlMessagesFn[item]);
+            });
         }
     }
 
     function destroyMessages(ctx) {
-        Mettle.each(ctx.messages, function (item) {
-            Mettle.messaging.unsubscribe(item);
-        });
+        if (ctx._messagesFn) {
+            Mettle.each(ctx.messages, function (item, key) {
+                Mettle.messaging.unsubscribe(item, ctx._messagesFn(key));
+            });
+        }
     }
 
     function renderTemplates(ctx, data) {
@@ -195,16 +199,19 @@
         }
         destroyControlMessages(ctx);
         var messages = ctx.controlMessages;
-        Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
-        Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
-        Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
+        ctx._controlMessagesFn = {};
+        ctx._controlMessagesFn.show = Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
+        ctx._controlMessagesFn.hide = Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
+        ctx._controlMessagesFn.stateChange = Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
             ctx.lastStateData = stateData;
             Mettle.each(ctx.onRouteChange(stateData), function (item, key) {
                 Mettle.navigation.route(ctx, key, item);
             });
         });
+        destroyMessages(ctx);
+        ctx._messagesFn = {};
         Mettle.each(ctx.messages, function (message, key) {
-            Mettle.messaging.subscribe(ctx, key, message);
+            ctx._messagesFn[key] = Mettle.messaging.subscribe(ctx, key, message);
         });
     }
 

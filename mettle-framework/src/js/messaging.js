@@ -4,12 +4,12 @@
     var Messaging = function () {
         this.guid = guid();
         this.localMessageBus = $({});
-//        Mettle.infoLogger("messageBus._____create", this.guid);
+        Mettle.infoLogger("messageBus._____create", this.guid);
     };
 
     Messaging.prototype = {
         publish: function (subject, message) {
-//            Mettle.infoLogger("messageBus.____publish", this.guid, subject, message);
+            Mettle.infoLogger("messageBus.____publish", this.guid, subject, message);
             this.localMessageBus.trigger(subject, [message]);
         },
         subscribe: function (scope, subjects, fn) {
@@ -18,7 +18,7 @@
                 subjects = scope;
                 scope = window;
             }
-//            Mettle.infoLogger("messageBus.__subscribe", this.guid, subjects);
+            Mettle.infoLogger("messageBus.__subscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 return getSubsricber(that, fn, scope, subjects);
@@ -30,7 +30,7 @@
             return subscriberFNs;
         },
         unsubscribe: function (subjects, fn) {
-//            Mettle.infoLogger("messageBus.unsubscribe", this.guid, subjects);
+            Mettle.infoLogger("messageBus.unsubscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 that.localMessageBus.off(subjects, fn);
@@ -44,6 +44,7 @@
 
     function getSubsricber(ctx, fn, scope, subject) {
         var unsubscribeMethod = function (e, message) {
+            Mettle.infoLogger("messageBus.___received", subject, message);
             fn.call(scope, message);
         };
         ctx.localMessageBus.on(subject, unsubscribeMethod);
