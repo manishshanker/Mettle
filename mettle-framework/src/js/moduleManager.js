@@ -38,11 +38,13 @@
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
                     module.load();
+                    module.show();
                     if (!data.redirecting) {
                         Mettle.messaging.publish(module.controlMessages.stateChange, data);
                     }
                 } else {
                     module.load();
+                    module.show();
                 }
                 destroyedModule[moduleName] = false;
             });
