@@ -11,7 +11,8 @@ Mettle - MVC Framework for HTML5 Web Application
 &#10004; MVC
 &#10004; Modular
 &#10004; E2E, Unit Testing
-&#10004; Clean and simple
+&#10004; Clean
+&#10004; Code Quality
 <!--
 API Doc
 -->
