@@ -65,17 +65,16 @@
             var $link = getPageLink(page);
             $link.addClass("selected");
             var cachedViewState = viewState[page];
-            if (cachedViewState) {
+            var redirecting = false;
+            if (cachedViewState && (cachedViewState.pageData !== appStateData.pageData)) {
                 if (cachedViewState.pageData) {
+                    Mettle.logInfo("redirecting to restore state of " + currentView);
                     location.replace("#/" + page + "/" + cachedViewState.pageData);
-                    appStateData.redirecting = true;
-                    Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
-                    return true;
+                    redirecting = true;
                 }
             }
-            appStateData.redirecting = true;
             Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
-            return false;
+            return redirecting;
         }
 
         function isKeepOldState(page) {

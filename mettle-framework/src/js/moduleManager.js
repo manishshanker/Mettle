@@ -25,10 +25,11 @@
             var module = new ModuleClass();
             content[moduleName] = content[moduleName] || $moduleContainer.html();
 
-            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
+            Mettle.messaging.subscribe(module.controlMessages.hide, function (data) {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
+                module = null;
                 destroyedModule[moduleName] = true;
             });
 
@@ -37,15 +38,11 @@
                     Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
-                    module.load();
-                    module.show();
-                    if (!data.redirecting) {
-                        Mettle.messaging.publish(module.controlMessages.stateChange, data);
-                    }
                 } else {
-                    module.load();
-                    module.show();
+                    Mettle.logInfo("loading module:" + moduleName);
                 }
+                module.load();
+                module.show(data);
                 destroyedModule[moduleName] = false;
             });
         });
