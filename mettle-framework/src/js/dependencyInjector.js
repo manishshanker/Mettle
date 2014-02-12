@@ -85,7 +85,7 @@
             try {
                 return getClassInstance(dependency, ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
             } catch(e) {
-                Mettle.errorLogger(e);
+                Mettle.logError(e);
                 throw new Error("Direct dependency instance creation error: (" + type + "," + dependency + " | " + (capitalise(dependency)) + ")");
             }
         }
@@ -106,7 +106,7 @@
         try {
             return new Mettle.ModuleNameSpace[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
         } catch (e) {
-            Mettle.errorLogger(e);
+            Mettle.logError(e);
             throw new Error("Dependency instance creation error: (" + type + "," + dependency + " | " + moduleNameSpace + "." + (capitalise(dependency)) + ")");
         }
     }

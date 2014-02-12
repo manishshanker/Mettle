@@ -5,7 +5,7 @@
     Mettle.each = each;
 
 
-    Mettle.LOGGER_LEVEL = {
+    Mettle.LOG_LEVEL = {
         ERROR: 1,
         WARN: 2,
         INFO: 4,
@@ -17,7 +17,7 @@
 
     function getLogger(type) {
         return (window.console && window.console.log && function () {
-            if (Mettle.LOGGER_LEVEL.CURRENT >= Mettle.LOGGER_LEVEL[type.toUpperCase()]) {
+            if (Mettle.LOG_LEVEL.CURRENT >= Mettle.LOG_LEVEL[type.toUpperCase()]) {
                 if (console.log.apply) {
                     (console[type]?console[type]:console.log).apply(console, arguments);
                 } else {
@@ -27,10 +27,10 @@
         }) || Mettle.noop;
     }
 
-    Mettle.infoLogger = getLogger("info");
-    Mettle.logger = getLogger("log");
-    Mettle.errorLogger = getLogger("error");
-    Mettle.warningLogger = getLogger("warn");
+    Mettle.logInfo = getLogger("info");
+    Mettle.log = getLogger("log");
+    Mettle.logError = getLogger("error");
+    Mettle.logWarn = getLogger("warn");
 
 
     function each(data, callback) {

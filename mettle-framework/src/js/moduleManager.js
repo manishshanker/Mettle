@@ -4,7 +4,7 @@
     Mettle.init = function (appNameSpace, locale, logLevel) {
         Mettle.i18nT = locale;
         Mettle.ModuleNameSpace = appNameSpace || {};
-        Mettle.LOGGER_LEVEL.CURRENT = logLevel || Mettle.LOGGER_LEVEL.WARN;
+        Mettle.LOG_LEVEL.CURRENT = logLevel || Mettle.LOG_LEVEL.WARN;
         return Mettle;
     };
 
@@ -26,7 +26,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
 
             Mettle.messaging.subscribe(module.controlMessages.hide, function () {
-                Mettle.infoLogger("destroying module:" + moduleName);
+                Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
                 destroyedModule[moduleName] = true;
@@ -34,7 +34,7 @@
 
             Mettle.messaging.subscribe(module.controlMessages.show, function (data) {
                 if (destroyedModule[moduleName]) {
-                    Mettle.infoLogger("loading destroyed module:" + moduleName);
+                    Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
                     module.load();
