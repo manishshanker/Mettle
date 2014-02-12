@@ -1,14 +1,19 @@
-Mettle [![Build Status](https://api.travis-ci.org/manishshanker/Mettle.png?branch=master)](https://travis-ci.org/manishshanker/Mettle)
+Mettle [![Build Status](https://api.travis-ci.org/manishshanker/Mettle.png?branch=master)](https://travis-ci.org/manishshanker/Mettle)  
 ======
 
 Mettle - MVC Framework for HTML5 Web Application
 
-#mettle-boilerplate
-
+#mettle-boilerplate 
+&#10004; HTML5
+&#10004; W3C Compliant
+&#10004; Localisation 
+&#10004; Integrated Build
+&#10004; MVC
+&#10004; Modular
+&#10004; E2E, Unit Testing
+&#10004; Clean and simple
 <!--
-INTRODUCTION
-BASE CLASSES
-UTILITIES
+API Doc
 -->
 
 ##Directory layout
@@ -56,7 +61,7 @@ NodeJS, ANT
     cd <project-seed-folder>
     npm install
 
-###Build: (creates a prod build in 'out' folder)
+###Build: (generates output in  `out` folder)
     cd <project-seed-folder>/build
     ant
 
