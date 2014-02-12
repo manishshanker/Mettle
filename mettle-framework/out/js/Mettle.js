@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 12022014000712
+ * @buildTimestamp 12022014102511
  */
 (function (Mettle, window) {
     "use strict";
@@ -102,7 +102,7 @@
     Mettle.init = function (appNameSpace, locale, logLevel) {
         Mettle.i18nT = locale;
         Mettle.ModuleNameSpace = appNameSpace || {};
-        Mettle.LOGGER_LEVEL.CURRENT = logLevel || Mettle.LOGGER_LEVEL.WARN;
+        Mettle.LOG_LEVEL.CURRENT = logLevel || Mettle.LOG_LEVEL.WARN;
         return Mettle;
     };
 
@@ -124,7 +124,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
 
             Mettle.messaging.subscribe(module.controlMessages.hide, function () {
-                Mettle.infoLogger("destroying module:" + moduleName);
+                Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
                 destroyedModule[moduleName] = true;
@@ -132,15 +132,17 @@
 
             Mettle.messaging.subscribe(module.controlMessages.show, function (data) {
                 if (destroyedModule[moduleName]) {
-                    Mettle.infoLogger("loading destroyed module:" + moduleName);
+                    Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
                     module.load();
+                    module.show();
                     if (!data.redirecting) {
                         Mettle.messaging.publish(module.controlMessages.stateChange, data);
                     }
                 } else {
                     module.load();
+                    module.show();
                 }
                 destroyedModule[moduleName] = false;
             });
@@ -197,7 +199,7 @@
     Mettle.each = each;
 
 
-    Mettle.LOGGER_LEVEL = {
+    Mettle.LOG_LEVEL = {
         ERROR: 1,
         WARN: 2,
         INFO: 4,
@@ -209,7 +211,7 @@
 
     function getLogger(type) {
         return (window.console && window.console.log && function () {
-            if (Mettle.LOGGER_LEVEL.CURRENT >= Mettle.LOGGER_LEVEL[type.toUpperCase()]) {
+            if (Mettle.LOG_LEVEL.CURRENT >= Mettle.LOG_LEVEL[type.toUpperCase()]) {
                 if (console.log.apply) {
                     (console[type]?console[type]:console.log).apply(console, arguments);
                 } else {
@@ -219,10 +221,10 @@
         }) || Mettle.noop;
     }
 
-    Mettle.infoLogger = getLogger("info");
-    Mettle.logger = getLogger("log");
-    Mettle.errorLogger = getLogger("error");
-    Mettle.warningLogger = getLogger("warn");
+    Mettle.logInfo = getLogger("info");
+    Mettle.log = getLogger("log");
+    Mettle.logError = getLogger("error");
+    Mettle.logWarn = getLogger("warn");
 
 
     function each(data, callback) {
@@ -265,12 +267,12 @@
     var Messaging = function () {
         this.guid = guid();
         this.localMessageBus = $({});
-        Mettle.infoLogger("messageBus._____create", this.guid);
+        Mettle.logInfo("messageBus._____create", this.guid);
     };
 
     Messaging.prototype = {
         publish: function (subject, message) {
-            Mettle.infoLogger("messageBus.____publish", this.guid, subject, message);
+            Mettle.logInfo("messageBus.____publish", this.guid, subject, message);
             this.localMessageBus.trigger(subject, [message]);
         },
         subscribe: function (scope, subjects, fn) {
@@ -279,7 +281,7 @@
                 subjects = scope;
                 scope = window;
             }
-            Mettle.infoLogger("messageBus.__subscribe", this.guid, subjects);
+            Mettle.logInfo("messageBus.__subscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 return getSubsricber(that, fn, scope, subjects);
@@ -291,7 +293,7 @@
             return subscriberFNs;
         },
         unsubscribe: function (subjects, fn) {
-            Mettle.infoLogger("messageBus.unsubscribe", this.guid, subjects);
+            Mettle.logInfo("messageBus.unsubscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
                 that.localMessageBus.off(subjects, fn);
@@ -305,7 +307,7 @@
 
     function getSubsricber(ctx, fn, scope, subject) {
         var unsubscribeMethod = function (e, message) {
-            Mettle.infoLogger("messageBus.___received", subject, message);
+            Mettle.logInfo("messageBus.___received", subject, message);
             fn.call(scope, message);
         };
         ctx.localMessageBus.on(subject, unsubscribeMethod);
@@ -886,7 +888,7 @@
             try {
                 return getClassInstance(dependency, ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
             } catch(e) {
-                Mettle.errorLogger(e);
+                Mettle.logError(e);
                 throw new Error("Direct dependency instance creation error: (" + type + "," + dependency + " | " + (capitalise(dependency)) + ")");
             }
         }
@@ -907,7 +909,7 @@
         try {
             return new Mettle.ModuleNameSpace[moduleNameSpace][capitalise(dependency)](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
         } catch (e) {
-            Mettle.errorLogger(e);
+            Mettle.logError(e);
             throw new Error("Dependency instance creation error: (" + type + "," + dependency + " | " + moduleNameSpace + "." + (capitalise(dependency)) + ")");
         }
     }
