@@ -4,15 +4,16 @@ Mettle [![Build Status](https://api.travis-ci.org/manishshanker/Mettle.png?branc
 Mettle - MVC Framework for HTML5 Web Application
 
 #mettle-boilerplate 
-&#10004; HTML5
-&#10004; W3C Compliant
-&#10004; Localisation 
-&#10004; Integrated Build
-&#10004; MVC
-&#10004; Modular
-&#10004; E2E, Unit Testing
-&#10004; Clean
-&#10004; Code Quality
+&#10004;&nbsp;HTML5&nbsp; 
+&#10004;&nbsp;Standards-compliant&nbsp;
+&#10004;&nbsp;Localisation&nbsp; 
+&#10004;&nbsp;Integrated Build&nbsp;
+&#10004;&nbsp;Model-View-Controller&nbsp;
+&#10004;&nbsp;Modular&nbsp;
+&#10004;&nbsp;E2E&nbsp;Testing&nbsp;
+&#10004;&nbsp;Unit&nbsp;Testing&nbsp;
+&#10004;&nbsp;Clean&nbsp;Code&nbsp;
+&#10004;&nbsp;JSLint,&nbsp;W3C&nbsp;
 <!--
 API Doc
 -->
