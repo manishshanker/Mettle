@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 11022014235644
+ * @buildTimestamp 12022014000712
  */
 (function (Mettle, window) {
     "use strict";
@@ -123,21 +123,21 @@
             var module = new ModuleClass();
             content[moduleName] = content[moduleName] || $moduleContainer.html();
 
-            Mettle.messaging.subscribe("navigationChangedFrom:" + moduleName, function () {
+            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
                 Mettle.infoLogger("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
                 destroyedModule[moduleName] = true;
             });
 
-            Mettle.messaging.subscribe("navigationChangedTo:" + moduleName, function (data) {
+            Mettle.messaging.subscribe(module.controlMessages.show, function (data) {
                 if (destroyedModule[moduleName]) {
                     Mettle.infoLogger("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
                     module.load();
                     if (!data.redirecting) {
-                        Mettle.messaging.publish("navigationStateChange:" + moduleName, data);
+                        Mettle.messaging.publish(module.controlMessages.stateChange, data);
                     }
                 } else {
                     module.load();
