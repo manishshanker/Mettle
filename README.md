@@ -49,46 +49,41 @@ UTILITIES
 
 ##Setup/Build/Test/Run
 
-    Dependency
-    ----------
-    NodeJS, ANT
+###Dependency
+NodeJS, ANT
 
-    Install:
-    --------
-        cd <project-seed-folder>
-        npm install
+###Install:
+    cd <project-seed-folder>
+    npm install
 
-    Build: (creates a prod build in 'out' folder)
-    ---------------------------------------------
-        cd <project-seed-folder>/build
-        ant
+###Build: (creates a prod build in 'out' folder)
+    cd <project-seed-folder>/build
+    ant
 
-    Running e2e tests:
-    ------------------
-        cd <project-seed-folder>/test/e2e
-        node e2e
-        //Ensure config.js points to correct baseURL, serverPort and resourceFolder
+###Running e2e tests:
+    cd <project-seed-folder>/test/e2e
+    node e2e
+*Ensure config.js points to correct baseURL, serverPort and resourceFolder*
 
-    Running unit tests:
-    -------------------
-        cd <project-seed-folder>/test/unit
-        karma start karma.conf.js
-        //WebStorm IDE: Instead of commandline, right click on karma.conf.js and click Run.
+###Running unit tests:
+    cd <project-seed-folder>/test/unit
+    karma start karma.conf.js
+*WebStorm IDE: Instead of commandline, right click on karma.conf.js and click Run*
 
-    Teamcity Integration
-    --------------------
-        Set env variable in teamcity: e.g. MacOS X- env.PATH, env.PHANTOMJS_BIN
+---
 
-        UNIT Tests
-        ----------
-            karma start karma.conf.js --single-run --reporters teamcity,coverage
-            *Create a new build with above command line*
+###Teamcity Integration
+    Set env variable in teamcity: e.g. MacOS X- env.PATH, env.PHANTOMJS_BIN
 
-        E2E Tests
-        ---------
-            node e2e
-            *Create a new build with above command line*
+####UNIT Tests
+    karma start karma.conf.js --single-run --reporters teamcity,coverage
+*Create a new build with above command line*
 
+####E2E Tests
+    node e2e
+*Create a new build with above command line*
+
+---
 
 ## License
 
