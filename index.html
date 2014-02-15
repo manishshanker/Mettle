@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Mettle by manishshanker</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Mettle</h1>
+        <p>Mettle - MVC Framework for HTML5 Web Application</p>
+        <p class="view"><a href="https://github.com/manishshanker/Mettle">View the Project on GitHub <small>manishshanker/Mettle</small></a></p>
+        <ul>
+          <li><a href="https://github.com/manishshanker/Mettle/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/manishshanker/Mettle/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/manishshanker/Mettle">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="mettle---" class="anchor" href="#mettle---"><span class="octicon octicon-link"></span></a>Mettle <a href="https://travis-ci.org/manishshanker/Mettle"><img src="https://api.travis-ci.org/manishshanker/Mettle.png?branch=master" alt="Build Status"></a>  </h1>
+
+<p>Mettle - MVC Framework for HTML5 Web Application</p>
+
+<h1>
+<a name="mettle-boilerplate" class="anchor" href="#mettle-boilerplate"><span class="octicon octicon-link"></span></a>mettle-boilerplate</h1>
+
+<p>✔ HTML5  
+✔ Standards-compliant 
+✔ Localisation  
+✔ Integrated Build 
+✔ Model-View-Controller 
+✔ Modular 
+✔ E2E Testing 
+✔ Unit Testing 
+✔ Clean Code 
+✔ JSLint, W3C </p>
+
+
+
+<h2>
+<a name="directory-layout" class="anchor" href="#directory-layout"><span class="octicon octicon-link"></span></a>Directory layout</h2>
+
+<pre><code>build/
+  jar/              --&gt; ant dependencies
+  build.xml         --&gt; ant build file
+src/                --&gt; all of the files to be used in production
+  lib/              --&gt; all library resource js, css, templates, vendor libs, etc.
+    css/            --&gt; css files
+      module.css    --&gt; default stylesheet
+    img/            --&gt; image files
+    js/
+      app/          --&gt; app specific code
+        i18n/       --&gt; localised string resource
+        modules/    --&gt; all module code
+        appCache.js --&gt; for handling HTML5 app cache
+        main.js     --&gt; main file where execution begins
+        config.js   --&gt; holds the namespace for the project and other global configs
+        serviceURLs --&gt; holds list of all urls required by modules
+      vendor/
+    templates/      --&gt; holds all templates, default handlebars
+    index.html      --&gt; app SPA file (the main html file of the app)
+test/
+  e2e/              --&gt; e2e tests, uses node, mocha, selenium-webdriverjs
+    tests/          --&gt; contains all tests file
+    config.js       --&gt; configuration file for e2e tests
+    e2e.js          --&gt; main runner file, starts a server, runs the test "node e2e"
+  mockServices/     --&gt; holds mock services for various module
+  unit/             --&gt; standalone unit tests, using mocha
+    config.js       --&gt; config file for test
+    suite.js        --&gt; list of all test files to execute
+    tests/          --&gt; all unit tests
+  unit-karma/       --&gt; karma unit tests, includes test coverage
+    karma.conf.js   --&gt; karma config
+      tests/        --&gt; all tests
+package.json        --&gt; use "npm install" to download and install all dev dependencies
+</code></pre>
+
+<h2>
+<a name="setupbuildtestrun" class="anchor" href="#setupbuildtestrun"><span class="octicon octicon-link"></span></a>Setup/Build/Test/Run</h2>
+
+<h3>
+<a name="dependency" class="anchor" href="#dependency"><span class="octicon octicon-link"></span></a>Dependency</h3>
+
+<p>NodeJS, ANT</p>
+
+<h3>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>Install:</h3>
+
+<pre><code>cd &lt;project-seed-folder&gt;
+npm install
+</code></pre>
+
+<h3>
+<a name="build-generates-output-in--out-folder" class="anchor" href="#build-generates-output-in--out-folder"><span class="octicon octicon-link"></span></a>Build: (generates output in  <code>out</code> folder)</h3>
+
+<pre><code>cd &lt;project-seed-folder&gt;/build
+ant
+</code></pre>
+
+<h3>
+<a name="running-e2e-tests" class="anchor" href="#running-e2e-tests"><span class="octicon octicon-link"></span></a>Running e2e tests:</h3>
+
+<pre><code>cd &lt;project-seed-folder&gt;/test/e2e
+node e2e
+</code></pre>
+
+<p><em>Ensure config.js points to correct baseURL, serverPort and resourceFolder</em></p>
+
+<h3>
+<a name="running-unit-tests" class="anchor" href="#running-unit-tests"><span class="octicon octicon-link"></span></a>Running unit tests:</h3>
+
+<pre><code>cd &lt;project-seed-folder&gt;/test/unit
+karma start karma.conf.js
+</code></pre>
+
+<p><em>WebStorm IDE: Instead of commandline, right click on karma.conf.js and click Run</em></p>
+
+<hr><h3>
+<a name="teamcity-integration" class="anchor" href="#teamcity-integration"><span class="octicon octicon-link"></span></a>Teamcity Integration</h3>
+
+<pre><code>Set env variable in teamcity: e.g. MacOS X- env.PATH, env.PHANTOMJS_BIN
+</code></pre>
+
+<h4>
+<a name="unit-tests" class="anchor" href="#unit-tests"><span class="octicon octicon-link"></span></a>UNIT Tests</h4>
+
+<pre><code>karma start karma.conf.js --single-run --reporters teamcity,coverage
+</code></pre>
+
+<p><em>Create a new build with above command line</em></p>
+
+<h4>
+<a name="e2e-tests" class="anchor" href="#e2e-tests"><span class="octicon octicon-link"></span></a>E2E Tests</h4>
+
+<pre><code>node e2e
+</code></pre>
+
+<p><em>Create a new build with above command line</em></p>
+
+<hr><h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright 2014 Manish Shanker</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+
+<p><a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/manishshanker">manishshanker</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
