@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 12022014111726
+ * @buildTimestamp 19022014165703
  */
 (function (Mettle, window) {
     "use strict";
@@ -99,6 +99,8 @@
 (function(Mettle, $) {
     "use strict";
 
+    var loaded_modules = {};
+
     Mettle.init = function (appNameSpace, locale, logLevel) {
         Mettle.i18nT = locale;
         Mettle.ModuleNameSpace = appNameSpace || {};
@@ -107,8 +109,9 @@
     };
 
     Mettle.modules = function(modules) {
-        Mettle.each(modules, function (ModuleClass) {
-            new ModuleClass().load();
+        Mettle.each(modules, function (ModuleClass, moduleName) {
+            loaded_modules[moduleName] = new ModuleClass();
+            loaded_modules[moduleName].load();
         });
         return Mettle;
     };
@@ -122,11 +125,14 @@
             $moduleContainer.attr("data-keep-state", "false");
             var module = new ModuleClass();
             content[moduleName] = content[moduleName] || $moduleContainer.html();
+            loaded_modules[moduleName] = module;
 
             Mettle.messaging.subscribe(module.controlMessages.hide, function (data) {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
+                loaded_modules[moduleName] = null;
+                delete loaded_modules[moduleName];
                 module = null;
                 destroyedModule[moduleName] = true;
             });
@@ -136,6 +142,7 @@
                     Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
+                    loaded_modules[moduleName] = module;
                 } else {
                     Mettle.logInfo("loading module:" + moduleName);
                 }
@@ -145,6 +152,10 @@
             });
         });
         return Mettle;
+    };
+
+    Mettle.getModule = function(moduleName) {
+        return loaded_modules[moduleName];
     };
 
     Mettle.start = function(defaultPage) {
@@ -659,25 +670,25 @@
         },
         load: function (onSuccess) {
             var that = this;
-            if (this.path === undefined || templateCache[this.guid()]) {
-                onSuccess();
+            if (that.path === undefined || templateCache[that.guid()]) {
+                onSuccess.call(that, that);
             } else {
                 if (that.loadBy === Mettle.Template.LOAD.BY_URL) {
                     var path = addExtension(addForwardSlash(Mettle.Template.LOAD.BY_URL_DEFAULT_PATH) + that.path);
                     Mettle.templateEngine.getByURL(path, function (template) {
                         templateCache[that.guid()] = template;
-                        onSuccess.call(that);
+                        onSuccess.call(that, that);
                     });
                 } else if (this.loadBy === Mettle.Template.LOAD.BY_ID) {
                     templateCache[this.guid()] = Mettle.templateEngine.getById(this.path);
                     Mettle.templateEngine.remove(this.path);
                     setTimeout(function () {
-                        onSuccess.call(that);
+                        onSuccess.call(that, that);
                     }, 5);
                 } else {
                     templateCache[this.guid()] = Mettle.templateEngine.getByString(this.path);
                     setTimeout(function () {
-                        onSuccess.call(that);
+                        onSuccess.call(that, that);
                     }, 5);
                 }
             }
@@ -765,9 +776,15 @@
         var bindings = typeof ctx.bindings === "function" ? ctx.bindings() : ctx.bindings;
         Mettle.each(bindings, function (fn, key) {
             var parts = /([a-z]+)\s([a-zA-Z0-9\-\.\(\)>]+)/.exec(key);
-            ctx.$container.on(parts[1], parts[2], function (e) {
-                fn.call(ctx, e, this);
-            });
+            if (parts) {
+                ctx.$container.on(parts[1], parts[2], function (e) {
+                    return fn.call(ctx, e, this);
+                });
+            } else {
+                ctx.$container.on(key, function (e) {
+                    return fn.call(ctx, e, this);
+                });
+            }
         });
     }
 

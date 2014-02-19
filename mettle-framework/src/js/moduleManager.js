@@ -1,6 +1,8 @@
 (function(Mettle, $) {
     "use strict";
 
+    var loaded_modules = {};
+
     Mettle.init = function (appNameSpace, locale, logLevel) {
         Mettle.i18nT = locale;
         Mettle.ModuleNameSpace = appNameSpace || {};
@@ -9,8 +11,9 @@
     };
 
     Mettle.modules = function(modules) {
-        Mettle.each(modules, function (ModuleClass) {
-            new ModuleClass().load();
+        Mettle.each(modules, function (ModuleClass, moduleName) {
+            loaded_modules[moduleName] = new ModuleClass();
+            loaded_modules[moduleName].load();
         });
         return Mettle;
     };
@@ -24,11 +27,14 @@
             $moduleContainer.attr("data-keep-state", "false");
             var module = new ModuleClass();
             content[moduleName] = content[moduleName] || $moduleContainer.html();
+            loaded_modules[moduleName] = module;
 
             Mettle.messaging.subscribe(module.controlMessages.hide, function (data) {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
+                loaded_modules[moduleName] = null;
+                delete loaded_modules[moduleName];
                 module = null;
                 destroyedModule[moduleName] = true;
             });
@@ -38,6 +44,7 @@
                     Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
                     module = new ModuleClass();
+                    loaded_modules[moduleName] = module;
                 } else {
                     Mettle.logInfo("loading module:" + moduleName);
                 }
@@ -47,6 +54,10 @@
             });
         });
         return Mettle;
+    };
+
+    Mettle.getModule = function(moduleName) {
+        return loaded_modules[moduleName];
     };
 
     Mettle.start = function(defaultPage) {

@@ -58,9 +58,15 @@
         var bindings = typeof ctx.bindings === "function" ? ctx.bindings() : ctx.bindings;
         Mettle.each(bindings, function (fn, key) {
             var parts = /([a-z]+)\s([a-zA-Z0-9\-\.\(\)>]+)/.exec(key);
-            ctx.$container.on(parts[1], parts[2], function (e) {
-                fn.call(ctx, e, this);
-            });
+            if (parts) {
+                ctx.$container.on(parts[1], parts[2], function (e) {
+                    return fn.call(ctx, e, this);
+                });
+            } else {
+                ctx.$container.on(key, function (e) {
+                    return fn.call(ctx, e, this);
+                });
+            }
         });
     }
 
