@@ -62,6 +62,9 @@
         },
         remove: function () {
             this.$item.remove();
+        },
+        append: function(html) {
+            this.$item.append(html);
         }
     };
 

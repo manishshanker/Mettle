@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 19022014165703
+ * @buildTimestamp 20022014141617
  */
 (function (Mettle, window) {
     "use strict";
@@ -90,6 +90,9 @@
         },
         remove: function () {
             this.$item.remove();
+        },
+        append: function(html) {
+            this.$item.append(html);
         }
     };
 
@@ -722,14 +725,12 @@
     Mettle.View = Mettle.Base.extend({
         autoManageEventBind: false,
         autoLayout: false,
+        appendViewTo: null,
         init: function (dependencies) {
             this.injectDependencies(dependencies);
-            this.$container = $(this.container);
-            this.$el = this.$container.$item;
-            if (!this.autoManageEventBind) {
-                this.bind();
+            if (!this.appendViewTo) {
+                initialise.call(this);
             }
-            addAutoLayoutHandler(this);
         },
         container: null,
         $container: null,
@@ -743,7 +744,12 @@
         },
         $el: null,
         render: function (html) {
-            this.$container.html(html);
+            if (this.appendViewTo) {
+                $(this.appendViewTo === true ? "body" : this.appendViewTo).append(html);
+                initialise.call(this);
+            } else {
+                this.$container.html(html);
+            }
         },
         destroy: function () {
             var that = this;
@@ -764,6 +770,15 @@
             addAutoLayoutHandler(that);
         }
     });
+
+    function initialise() {
+        this.$container = $(this.container);
+        this.$el = this.$container.$item;
+        if (!this.autoManageEventBind) {
+            this.bind();
+        }
+        addAutoLayoutHandler(this);
+    }
 
     function unbindEvents(ctx) {
         Mettle.each(ctx.bindings, function (fn, key) {
