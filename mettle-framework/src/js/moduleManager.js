@@ -29,7 +29,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
             loaded_modules[moduleName] = module;
 
-            Mettle.messaging.subscribe(module.controlMessages.hide, function (data) {
+            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();

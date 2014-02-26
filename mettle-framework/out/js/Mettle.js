@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 20022014141617
+ * @buildTimestamp 26022014135710
  */
 (function (Mettle, window) {
     "use strict";
@@ -130,7 +130,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
             loaded_modules[moduleName] = module;
 
-            Mettle.messaging.subscribe(module.controlMessages.hide, function (data) {
+            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
@@ -208,7 +208,9 @@
 
     Mettle.noop = noop;
     Mettle.each = each;
-
+    Mettle.currentLocation = function() {
+        return location.href;
+    };
 
     Mettle.LOG_LEVEL = {
         ERROR: 1,
@@ -833,7 +835,34 @@
 (function (Mettle) {
     "use strict";
 
+    var INJECT_TYPES = {
+        "tmpl!" : function(ctx, name) {
+            return Mettle.TemplateByURL(name);
+        }
+    };
+
     Mettle.dependencyInjector = injectDependencies;
+
+    Mettle.dependencyInjector.define = function(type, fn) {
+        INJECT_TYPES[type] = fn;
+    };
+
+    Mettle.dependencyInjector.define("controller!", function(ctx, name) {
+        return new Mettle.ModuleNameSpace.controller[name](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+
+    });
+
+    Mettle.dependencyInjector.define("template!", function(ctx, name) {
+        return new Mettle.ModuleNameSpace.template[name](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+    });
+
+    Mettle.dependencyInjector.define("service!", function(ctx, name) {
+        return new Mettle.ModuleNameSpace.service[name](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+    });
+
+    Mettle.dependencyInjector.define("view!", function(ctx, name) {
+        return new Mettle.ModuleNameSpace.view[name](ctx.injectLocalMessageBus ? ctx.localMessageBus : ctx.messageBus);
+    });
 
     var TYPES = {
         "views": "view",
@@ -921,6 +950,16 @@
                 throw new Error("Direct dependency instance creation error: (" + type + "," + dependency + " | " + (capitalise(dependency)) + ")");
             }
         }
+        if (dependency.indexOf("!")>0) {
+            try {
+                var parts = /([\w\W]+?!)([\w\W]*)/.exec(dependency);
+                return INJECT_TYPES[parts[1]](ctx, parts[2]);
+            } catch(e) {
+                Mettle.logError(e);
+                throw new Error("Defined dependency instance creation error: (" + type + "," + dependency + " | " + (capitalise(dependency)) + ")");
+            }
+        }
+
         var moduleNameSpace = TYPES[type];
         Mettle.ModuleNameSpace[moduleNameSpace] = Mettle.ModuleNameSpace[moduleNameSpace] || {};
         if (type === "templates") {
@@ -929,9 +968,6 @@
             }
             if (Mettle.ModuleNameSpace.template[dependency]) {
                 return Mettle.ModuleNameSpace.template[dependency];
-            }
-            if (dependency.indexOf("tmpl!") === 0) {
-                return Mettle.TemplateByURL(dependency.substr(5));
             }
             return Mettle.TemplateByID("tmpl" + capitalise(dependency));
         }
@@ -942,6 +978,7 @@
             throw new Error("Dependency instance creation error: (" + type + "," + dependency + " | " + moduleNameSpace + "." + (capitalise(dependency)) + ")");
         }
     }
+
 
     function getClassInstance(dependency, param) {
         var Clazz = window;

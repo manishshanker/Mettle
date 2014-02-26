@@ -3,7 +3,9 @@
 
     Mettle.noop = noop;
     Mettle.each = each;
-
+    Mettle.currentLocation = function() {
+        return location.href;
+    };
 
     Mettle.LOG_LEVEL = {
         ERROR: 1,
