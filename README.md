@@ -60,20 +60,20 @@ API Doc
 NodeJS, ANT
 
 ###Install:
-    cd <project-seed-folder>
+    cd <project-folder>
     npm install
 
 ###Build: (generates output in  `out` folder)
-    cd <project-seed-folder>/build
+    cd <project-folder>/build
     ant
 
 ###Running e2e tests:
-    cd <project-seed-folder>/test/e2e
+    cd <project--folder>/test/e2e
     node e2e
 *Ensure config.js points to correct baseURL, serverPort and resourceFolder*
 
 ###Running unit tests:
-    cd <project-seed-folder>/test/unit
+    cd <project-folder>/test/unit
     karma start karma.conf.js
 *WebStorm IDE: Instead of commandline, right click on karma.conf.js and click Run*
 
