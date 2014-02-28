@@ -3,6 +3,8 @@ Mettle [![Build Status](https://api.travis-ci.org/manishshanker/Mettle.png?branc
 
 Mettle - MVC Framework for HTML5 Web Application
 
+[Controller](https://github.com/manishshanker/Mettle/blob/master/mettle-framework/src/js/baseClass/Controller.js), [Service](https://github.com/manishshanker/Mettle/blob/master/mettle-framework/src/js/baseClass/Service.js), [View](https://github.com/manishshanker/Mettle/blob/master/mettle-framework/src/js/baseClass/View.js)
+
 #mettle-boilerplate 
 &#10004;&nbsp;HTML5&nbsp; 
 &#10004;&nbsp;Standards-compliant&nbsp;
@@ -14,9 +16,8 @@ Mettle - MVC Framework for HTML5 Web Application
 &#10004;&nbsp;Unit&nbsp;Testing&nbsp;
 &#10004;&nbsp;Clean&nbsp;Code&nbsp;
 &#10004;&nbsp;JSLint,&nbsp;W3C&nbsp;
-<!--
-API Doc
--->
+
+[Controller sample](https://github.com/manishshanker/Mettle/blob/master/mettle-boilerplate/src/lib/js/app/modules/News/News.controller.js), [Service sample](https://github.com/manishshanker/Mettle/blob/master/mettle-boilerplate/src/lib/js/app/modules/News/controls/newsDetail/NewsDetail.service.js), [View sample](https://github.com/manishshanker/Mettle/blob/master/mettle-boilerplate/src/lib/js/app/modules/News/controls/newsList/NewsList.view.js), [Unit test sample](https://github.com/manishshanker/Mettle/blob/master/mettle-boilerplate/test/unit-karma/tests/modules/News/News.controller.test.js), [E2E test sample](https://github.com/manishshanker/Mettle/blob/master/mettle-boilerplate/test/e2e/tests/pageLoad.test.js)
 
 ##Directory layout
 
