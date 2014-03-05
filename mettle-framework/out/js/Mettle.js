@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 26022014135710
+ * @buildTimestamp 05032014172233
  */
 (function (Mettle, window) {
     "use strict";
@@ -404,6 +404,12 @@
             subscribeToMessages(this);
             autoLoadControls(this);
         },
+        loadOnce: function () {
+            if (!this._loaded) {
+                this.load();
+                this._loaded = true
+            }
+        },
         unload: function () {
             destroyMessages(this);
             unloadControls(this);
@@ -514,6 +520,7 @@
         ctx.options = null;
         ctx.controls = null;
         ctx._exist = false;
+        ctx._loaded = false;
         ctx.shownAndLoaded = false;
     }
 
@@ -739,10 +746,10 @@
         bindings: null,
         layoutChange: Mettle.noop,
         bind: function () {
-            bindEvents(this);
+            loopBindings(this, false);
         },
         unbind: function () {
-            unbindEvents(this);
+            loopBindings(this, true);
         },
         $el: null,
         render: function (html) {
@@ -782,27 +789,37 @@
         addAutoLayoutHandler(this);
     }
 
-    function unbindEvents(ctx) {
-        Mettle.each(ctx.bindings, function (fn, key) {
-            var parts = /([a-z]+)\s([a-zA-Z0-9\-\.\(\)>]+)/.exec(key);
-            ctx.$container.off(parts[1], parts[2]);
+    function getBindings(ctx) {
+        return typeof ctx.bindings === "function" ? ctx.bindings() : ctx.bindings;
+    }
+
+    function loopBindings(ctx, unBind) {
+        var bindings = getBindings(ctx);
+        var method = unBind ? unBindEvent : bindEvent;
+        Mettle.each(bindings, function (fn, key) {
+            var keyParts = /([a-zA-Z]+)\s([a-zA-Z0-9\-\.\(\)>]+)/.exec(key);
+            method(keyParts, ctx.$container, key, ctx, fn);
         });
     }
 
-    function bindEvents(ctx) {
-        var bindings = typeof ctx.bindings === "function" ? ctx.bindings() : ctx.bindings;
-        Mettle.each(bindings, function (fn, key) {
-            var parts = /([a-z]+)\s([a-zA-Z0-9\-\.\(\)>]+)/.exec(key);
-            if (parts) {
-                ctx.$container.on(parts[1], parts[2], function (e) {
-                    return fn.call(ctx, e, this);
-                });
-            } else {
-                ctx.$container.on(key, function (e) {
-                    return fn.call(ctx, e, this);
-                });
-            }
-        });
+    function bindEvent(keyParts, $container, eventName, ctx, fn) {
+        if (keyParts) {
+            $container.on(keyParts[1], keyParts[2], function (e) {
+                return fn.call(ctx, e, this);
+            });
+        } else {
+            $container.on(eventName, function (e) {
+                return fn.call(ctx, e, this);
+            });
+        }
+    }
+
+    function unBindEvent(parts, $container, eventName) {
+        if (parts) {
+            $container.off(parts[1], parts[2]);
+        } else {
+            $container.off(eventName);
+        }
     }
 
     function addAutoLayoutHandler(that) {

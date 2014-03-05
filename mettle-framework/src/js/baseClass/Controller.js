@@ -32,6 +32,12 @@
             subscribeToMessages(this);
             autoLoadControls(this);
         },
+        loadOnce: function () {
+            if (!this._loaded) {
+                this.load();
+                this._loaded = true
+            }
+        },
         unload: function () {
             destroyMessages(this);
             unloadControls(this);
@@ -142,6 +148,7 @@
         ctx.options = null;
         ctx.controls = null;
         ctx._exist = false;
+        ctx._loaded = false;
         ctx.shownAndLoaded = false;
     }
 
