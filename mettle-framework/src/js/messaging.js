@@ -21,11 +21,14 @@
             Mettle.logInfo("messageBus.__subscribe", this.guid, subjects);
             var that = this;
             if (typeof subjects === "string") {
-                return getSubsricber(that, fn, scope, subjects);
+                return getSubscriber(that, fn, scope, subjects);
+            }
+            if (arguments.length===1) {
+                subjects = scope;
             }
             var subscriberFNs = {};
             Mettle.each(subjects, function (fn, subject) {
-                subscriberFNs[subject] = getSubsricber(that, fn, scope, subject);
+                subscriberFNs[subject] = getSubscriber(that, fn, scope, subject);
             });
             return subscriberFNs;
         },
@@ -42,7 +45,7 @@
         }
     };
 
-    function getSubsricber(ctx, fn, scope, subject) {
+    function getSubscriber(ctx, fn, scope, subject) {
         var unsubscribeMethod = function (e, message) {
             Mettle.logInfo("messageBus.___received", subject, message);
             fn.call(scope, message);
