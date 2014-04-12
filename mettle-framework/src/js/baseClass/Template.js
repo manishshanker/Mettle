@@ -21,6 +21,7 @@
 
     Mettle.Template = Mettle.Base.extend({
         init: function (path, loadType) {
+            this._super();
             this.path = path;
             this.loadBy = loadType || Mettle.Template.LOAD.DEFAULT;
         },
@@ -28,31 +29,31 @@
             if (this.path === undefined) {
                 return "";
             }
-            if (!templateCache[this.guid()]) {
+            if (!templateCache[this.guid]) {
                 console.log("Template param: ", this.path, this.loadBy);
                 throw new Error("Template not in cache!!");
             }
-            return Mettle.templateEngine.process(templateCache[this.guid()], data);
+            return Mettle.templateEngine.process(templateCache[this.guid], data);
         },
         load: function (onSuccess) {
             var that = this;
-            if (that.path === undefined || templateCache[that.guid()]) {
+            if (that.path === undefined || templateCache[that.guid]) {
                 onSuccess.call(that, that);
             } else {
                 if (that.loadBy === Mettle.Template.LOAD.BY_URL) {
                     var path = addExtension(addForwardSlash(Mettle.Template.LOAD.BY_URL_DEFAULT_PATH) + that.path);
                     Mettle.templateEngine.getByURL(path, function (template) {
-                        templateCache[that.guid()] = template;
+                        templateCache[that.guid] = template;
                         onSuccess.call(that, that);
                     });
                 } else if (this.loadBy === Mettle.Template.LOAD.BY_ID) {
-                    templateCache[this.guid()] = Mettle.templateEngine.getById(this.path);
+                    templateCache[this.guid] = Mettle.templateEngine.getById(this.path);
                     Mettle.templateEngine.remove(this.path);
                     setTimeout(function () {
                         onSuccess.call(that, that);
                     }, 5);
                 } else {
-                    templateCache[this.guid()] = Mettle.templateEngine.getByString(this.path);
+                    templateCache[this.guid] = Mettle.templateEngine.getByString(this.path);
                     setTimeout(function () {
                         onSuccess.call(that, that);
                     }, 5);
@@ -60,7 +61,7 @@
             }
         },
         destroy: function () {
-            delete templateCache[this.guid()];
+            delete templateCache[this.guid];
         }
     });
 

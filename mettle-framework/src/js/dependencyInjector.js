@@ -38,12 +38,17 @@
     };
 
     function injectDependencies(ctx, dependencies) {
-        if (Mettle.Messaging && (dependencies instanceof Mettle.Messaging)) {
-            ctx.messageBus = dependencies;
+        if (window.Mettle_moduleLevelMessaging) {
+            if (Mettle.Messaging && (dependencies instanceof Mettle.Messaging)) {
+                ctx.messageBus = dependencies;
+            }
+            if (ctx.injectLocalMessageBus) {
+                ctx.localMessageBus = (dependencies && dependencies.inject && dependencies.inject.localMessageBus) || new Mettle.Messaging();
+            }
+        } else {
+            ctx.messageBus = new Mettle.Messaging();
         }
-        if (ctx.injectLocalMessageBus) {
-            ctx.localMessageBus = (dependencies && dependencies.inject && dependencies.inject.localMessageBus) || new Mettle.Messaging();
-        }
+
         var injectedDependencies = (dependencies && dependencies.inject) || (ctx.inject && (isFunction(ctx.inject) ? ctx.inject() : ctx.inject));
 
         injectedDependencies = injectDepUsingShorthand(injectedDependencies);

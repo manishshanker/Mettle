@@ -6,6 +6,7 @@
         autoLayout: false,
         appendViewTo: null,
         init: function (dependencies) {
+            this._super();
             this.injectDependencies(dependencies);
             if (!this.appendViewTo) {
                 initialise.call(this);
@@ -94,7 +95,7 @@
 
     function addAutoLayoutHandler(that) {
         if (that.autoLayout) {
-            $(window).off("resize." + that.guid()).on(("resize." + that.guid()), function () {
+            $(window).off("resize." + that.guid).on(("resize." + that.guid), function () {
                 that.layoutChange();
             });
         }
@@ -102,7 +103,7 @@
 
     function removeAutoLayoutHandler(that) {
         if (that.autoLayout) {
-            $(window).off("resize." + that.guid());
+            $(window).off("resize." + that.guid);
         }
     }
 

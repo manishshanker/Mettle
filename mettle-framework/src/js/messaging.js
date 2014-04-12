@@ -64,7 +64,7 @@
             .substring(1);
     }
 
-    Mettle.messaging = new Messaging();
+    Mettle.messageBus = new Messaging();
     Mettle.Messaging = Messaging;
 
 }(Mettle, Mettle.DOM));

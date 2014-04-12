@@ -2,14 +2,11 @@
     "use strict";
 
     Mettle.Base = Class.extend({
-        _guid: null,
-        messageBus: Mettle.messaging,
+        messageBus: Mettle.messageBus,
         injector: null,
-        guid: function () {
-            if (!this._guid) {
-                this._guid = guid();
-            }
-            return this._guid;
+        guid: null,
+        init: function() {
+            this.guid = guid();
         },
         injectDependencies: function (dependencies) {
             Mettle.dependencyInjector(this, dependencies);

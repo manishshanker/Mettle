@@ -48,15 +48,15 @@
         }
 
         function publishStateUpdate(appStateData) {
-            Mettle.messaging.publish("navigationStateChange:" + currentView, appStateData);
-            Mettle.messaging.publish("navigationStateChange", appStateData);
+            Mettle.messageBus.publish("navigationStateChange:" + currentView, appStateData);
+            Mettle.messageBus.publish("navigationStateChange", appStateData);
         }
 
         function hidePage(page, appStateData) {
             if (page) {
                 $("a[href$='#/" + page + "']").removeClass("selected");
                 $("#" + page).removeClass("page-visible");
-                Mettle.messaging.publish("navigationChangedFrom:" + page, appStateData);
+                Mettle.messageBus.publish("navigationChangedFrom:" + page, appStateData);
             }
         }
 
@@ -73,7 +73,7 @@
                     redirecting = true;
                 }
             }
-            Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+            Mettle.messageBus.publish("navigationChangedTo:" + currentView, appStateData);
             return redirecting;
         }
 
@@ -92,7 +92,7 @@
         }
 
         function parseLocationData(locationData) {
-            var a = /#\/([a-zA-Z_\-0-9\$]+)(\/([\w\W]+))?/.exec(locationData);
+            var a = /#\/([a-zA-Z0-9_\$\-]+)(\/([\w\W]+))?/.exec(locationData);
             if (!a) {
                 return null;
             }

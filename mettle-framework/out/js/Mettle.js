@@ -16,7 +16,7 @@
 
 /*!
  * @author Manish Shanker
- * @buildTimestamp 14032014143915
+ * @buildTimestamp 12042014074040
  */
 (function (Mettle, window) {
     "use strict";
@@ -24,6 +24,7 @@
     window.Mettle = Mettle || {};
     window.Mettle_Template_LOAD_BY_URL_DEFAULT_PATH = window.Mettle_Template_LOAD_BY_URL_DEFAULT_PATH || "";
     window.Mettle_Template_LOAD_BY_URL_DEFAULT_EXTENSION = window.Mettle_Template_LOAD_BY_URL_DEFAULT_EXTENSION || ".hbs";
+    window.Mettle_moduleLevelMessaging = true;
 
 }(window.Mettle, window));
 (function (Mettle, $) {
@@ -130,7 +131,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
             loaded_modules[moduleName] = module;
 
-            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
+            Mettle.messageBus.subscribe(module.controlMessages.hide, function () {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
@@ -140,7 +141,7 @@
                 destroyedModule[moduleName] = true;
             });
 
-            Mettle.messaging.subscribe(module.controlMessages.show, function (data) {
+            Mettle.messageBus.subscribe(module.controlMessages.show, function (data) {
                 if (destroyedModule[moduleName]) {
                     Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);
@@ -340,7 +341,7 @@
             .substring(1);
     }
 
-    Mettle.messaging = new Messaging();
+    Mettle.messageBus = new Messaging();
     Mettle.Messaging = Messaging;
 
 }(Mettle, Mettle.DOM));
@@ -348,14 +349,11 @@
     "use strict";
 
     Mettle.Base = Class.extend({
-        _guid: null,
-        messageBus: Mettle.messaging,
+        messageBus: Mettle.messageBus,
         injector: null,
-        guid: function () {
-            if (!this._guid) {
-                this._guid = guid();
-            }
-            return this._guid;
+        guid: null,
+        init: function() {
+            this.guid = guid();
         },
         injectDependencies: function (dependencies) {
             Mettle.dependencyInjector(this, dependencies);
@@ -387,7 +385,7 @@
         inject: null,
         routes: {},
         serviceUpdate: {},
-        messageBus: Mettle.messaging,
+        messageBus: Mettle.messageBus,
         localMessageBus: null,
         init: function (dependencies) {
             this.injectDependencies(dependencies);
@@ -532,7 +530,7 @@
             var controlMessages = ctx.controlMessages;
             var controlMessagesFn = ctx._controlMessagesFn;
             Mettle.each(["show", "hide", "stateChange"], function(item) {
-                Mettle.messaging.unsubscribe(controlMessages[item], controlMessagesFn[item]);
+                Mettle.messageBus.unsubscribe(controlMessages[item], controlMessagesFn[item]);
             });
         }
     }
@@ -540,7 +538,7 @@
     function destroyMessages(ctx) {
         if (ctx._messagesFn) {
             Mettle.each(ctx.messages, function (item, key) {
-                Mettle.messaging.unsubscribe(item, ctx._messagesFn(key));
+                Mettle.messageBus.unsubscribe(item, ctx._messagesFn(key));
             });
         }
     }
@@ -582,9 +580,9 @@
         destroyControlMessages(ctx);
         var messages = ctx.controlMessages;
         ctx._controlMessagesFn = {};
-        ctx._controlMessagesFn.show = Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
-        ctx._controlMessagesFn.hide = Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
-        ctx._controlMessagesFn.stateChange = Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
+        ctx._controlMessagesFn.show = Mettle.messageBus.subscribe(ctx, messages.show, ctx.show);
+        ctx._controlMessagesFn.hide = Mettle.messageBus.subscribe(ctx, messages.hide, ctx.hide);
+        ctx._controlMessagesFn.stateChange = Mettle.messageBus.subscribe(ctx, messages.stateChange, function (stateData) {
             ctx.lastStateData = stateData;
             Mettle.each(ctx.onRouteChange(stateData), function (item, key) {
                 Mettle.navigation.route(ctx, key, item);
@@ -593,7 +591,7 @@
         destroyMessages(ctx);
         ctx._messagesFn = {};
         Mettle.each(ctx.messages, function (message, key) {
-            ctx._messagesFn[key] = Mettle.messaging.subscribe(ctx, key, message);
+            ctx._messagesFn[key] = Mettle.messageBus.subscribe(ctx, key, message);
         });
     }
 
@@ -613,8 +611,9 @@
     Mettle.Service = Mettle.Base.extend({
         dataURL: null,
         init: function () {
-            privateVar[this.guid()] = {};
-            privateVar[this.guid()].updateCallBack = [];
+            this._super();
+            privateVar[this.guid] = {};
+            privateVar[this.guid].updateCallBack = [];
         },
         fetch: function () {
             $.get(this.dataURL, function (data) {
@@ -624,14 +623,14 @@
         update: Mettle.noop,
         get: Mettle.noop,
         lastResult: function () {
-            return privateVar[this.guid()].lastResult;
+            return privateVar[this.guid].lastResult;
         },
         onUpdate: function (callback) {
-            privateVar[this.guid()].updateCallBack.push(callback);
+            privateVar[this.guid].updateCallBack.push(callback);
         },
         updated: function (data) {
             var n, l;
-            var localPrivateVar = privateVar[this.guid()];
+            var localPrivateVar = privateVar[this.guid];
             localPrivateVar.lastResult = data;
             if (localPrivateVar) {
                 for (n = 0, l = localPrivateVar.updateCallBack.length; n < l; n++) {
@@ -640,7 +639,7 @@
             }
         },
         destroy: function () {
-            delete privateVar[this.guid()];
+            delete privateVar[this.guid];
         },
         stop: Mettle.noop,
         start: Mettle.noop
@@ -670,6 +669,7 @@
 
     Mettle.Template = Mettle.Base.extend({
         init: function (path, loadType) {
+            this._super();
             this.path = path;
             this.loadBy = loadType || Mettle.Template.LOAD.DEFAULT;
         },
@@ -677,31 +677,31 @@
             if (this.path === undefined) {
                 return "";
             }
-            if (!templateCache[this.guid()]) {
+            if (!templateCache[this.guid]) {
                 console.log("Template param: ", this.path, this.loadBy);
                 throw new Error("Template not in cache!!");
             }
-            return Mettle.templateEngine.process(templateCache[this.guid()], data);
+            return Mettle.templateEngine.process(templateCache[this.guid], data);
         },
         load: function (onSuccess) {
             var that = this;
-            if (that.path === undefined || templateCache[that.guid()]) {
+            if (that.path === undefined || templateCache[that.guid]) {
                 onSuccess.call(that, that);
             } else {
                 if (that.loadBy === Mettle.Template.LOAD.BY_URL) {
                     var path = addExtension(addForwardSlash(Mettle.Template.LOAD.BY_URL_DEFAULT_PATH) + that.path);
                     Mettle.templateEngine.getByURL(path, function (template) {
-                        templateCache[that.guid()] = template;
+                        templateCache[that.guid] = template;
                         onSuccess.call(that, that);
                     });
                 } else if (this.loadBy === Mettle.Template.LOAD.BY_ID) {
-                    templateCache[this.guid()] = Mettle.templateEngine.getById(this.path);
+                    templateCache[this.guid] = Mettle.templateEngine.getById(this.path);
                     Mettle.templateEngine.remove(this.path);
                     setTimeout(function () {
                         onSuccess.call(that, that);
                     }, 5);
                 } else {
-                    templateCache[this.guid()] = Mettle.templateEngine.getByString(this.path);
+                    templateCache[this.guid] = Mettle.templateEngine.getByString(this.path);
                     setTimeout(function () {
                         onSuccess.call(that, that);
                     }, 5);
@@ -709,7 +709,7 @@
             }
         },
         destroy: function () {
-            delete templateCache[this.guid()];
+            delete templateCache[this.guid];
         }
     });
 
@@ -739,6 +739,7 @@
         autoLayout: false,
         appendViewTo: null,
         init: function (dependencies) {
+            this._super();
             this.injectDependencies(dependencies);
             if (!this.appendViewTo) {
                 initialise.call(this);
@@ -827,7 +828,7 @@
 
     function addAutoLayoutHandler(that) {
         if (that.autoLayout) {
-            $(window).off("resize." + that.guid()).on(("resize." + that.guid()), function () {
+            $(window).off("resize." + that.guid).on(("resize." + that.guid), function () {
                 that.layoutChange();
             });
         }
@@ -835,7 +836,7 @@
 
     function removeAutoLayoutHandler(that) {
         if (that.autoLayout) {
-            $(window).off("resize." + that.guid());
+            $(window).off("resize." + that.guid);
         }
     }
 
@@ -892,12 +893,17 @@
     };
 
     function injectDependencies(ctx, dependencies) {
-        if (Mettle.Messaging && (dependencies instanceof Mettle.Messaging)) {
-            ctx.messageBus = dependencies;
+        if (window.Mettle_moduleLevelMessaging) {
+            if (Mettle.Messaging && (dependencies instanceof Mettle.Messaging)) {
+                ctx.messageBus = dependencies;
+            }
+            if (ctx.injectLocalMessageBus) {
+                ctx.localMessageBus = (dependencies && dependencies.inject && dependencies.inject.localMessageBus) || new Mettle.Messaging();
+            }
+        } else {
+            ctx.messageBus = new Mettle.Messaging();
         }
-        if (ctx.injectLocalMessageBus) {
-            ctx.localMessageBus = (dependencies && dependencies.inject && dependencies.inject.localMessageBus) || new Mettle.Messaging();
-        }
+
         var injectedDependencies = (dependencies && dependencies.inject) || (ctx.inject && (isFunction(ctx.inject) ? ctx.inject() : ctx.inject));
 
         injectedDependencies = injectDepUsingShorthand(injectedDependencies);
@@ -1144,15 +1150,15 @@
         }
 
         function publishStateUpdate(appStateData) {
-            Mettle.messaging.publish("navigationStateChange:" + currentView, appStateData);
-            Mettle.messaging.publish("navigationStateChange", appStateData);
+            Mettle.messageBus.publish("navigationStateChange:" + currentView, appStateData);
+            Mettle.messageBus.publish("navigationStateChange", appStateData);
         }
 
         function hidePage(page, appStateData) {
             if (page) {
                 $("a[href$='#/" + page + "']").removeClass("selected");
                 $("#" + page).removeClass("page-visible");
-                Mettle.messaging.publish("navigationChangedFrom:" + page, appStateData);
+                Mettle.messageBus.publish("navigationChangedFrom:" + page, appStateData);
             }
         }
 
@@ -1169,7 +1175,7 @@
                     redirecting = true;
                 }
             }
-            Mettle.messaging.publish("navigationChangedTo:" + currentView, appStateData);
+            Mettle.messageBus.publish("navigationChangedTo:" + currentView, appStateData);
             return redirecting;
         }
 
@@ -1188,7 +1194,7 @@
         }
 
         function parseLocationData(locationData) {
-            var a = /#\/([a-zA-Z_\-0-9\$]+)(\/([\w\W]+))?/.exec(locationData);
+            var a = /#\/([a-zA-Z0-9_\$\-]+)(\/([\w\W]+))?/.exec(locationData);
             if (!a) {
                 return null;
             }

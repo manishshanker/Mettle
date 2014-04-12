@@ -12,7 +12,7 @@
         inject: null,
         routes: {},
         serviceUpdate: {},
-        messageBus: Mettle.messaging,
+        messageBus: Mettle.messageBus,
         localMessageBus: null,
         init: function (dependencies) {
             this.injectDependencies(dependencies);
@@ -157,7 +157,7 @@
             var controlMessages = ctx.controlMessages;
             var controlMessagesFn = ctx._controlMessagesFn;
             Mettle.each(["show", "hide", "stateChange"], function(item) {
-                Mettle.messaging.unsubscribe(controlMessages[item], controlMessagesFn[item]);
+                Mettle.messageBus.unsubscribe(controlMessages[item], controlMessagesFn[item]);
             });
         }
     }
@@ -165,7 +165,7 @@
     function destroyMessages(ctx) {
         if (ctx._messagesFn) {
             Mettle.each(ctx.messages, function (item, key) {
-                Mettle.messaging.unsubscribe(item, ctx._messagesFn(key));
+                Mettle.messageBus.unsubscribe(item, ctx._messagesFn(key));
             });
         }
     }
@@ -207,9 +207,9 @@
         destroyControlMessages(ctx);
         var messages = ctx.controlMessages;
         ctx._controlMessagesFn = {};
-        ctx._controlMessagesFn.show = Mettle.messaging.subscribe(ctx, messages.show, ctx.show);
-        ctx._controlMessagesFn.hide = Mettle.messaging.subscribe(ctx, messages.hide, ctx.hide);
-        ctx._controlMessagesFn.stateChange = Mettle.messaging.subscribe(ctx, messages.stateChange, function (stateData) {
+        ctx._controlMessagesFn.show = Mettle.messageBus.subscribe(ctx, messages.show, ctx.show);
+        ctx._controlMessagesFn.hide = Mettle.messageBus.subscribe(ctx, messages.hide, ctx.hide);
+        ctx._controlMessagesFn.stateChange = Mettle.messageBus.subscribe(ctx, messages.stateChange, function (stateData) {
             ctx.lastStateData = stateData;
             Mettle.each(ctx.onRouteChange(stateData), function (item, key) {
                 Mettle.navigation.route(ctx, key, item);
@@ -218,7 +218,7 @@
         destroyMessages(ctx);
         ctx._messagesFn = {};
         Mettle.each(ctx.messages, function (message, key) {
-            ctx._messagesFn[key] = Mettle.messaging.subscribe(ctx, key, message);
+            ctx._messagesFn[key] = Mettle.messageBus.subscribe(ctx, key, message);
         });
     }
 

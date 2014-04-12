@@ -29,7 +29,7 @@
             content[moduleName] = content[moduleName] || $moduleContainer.html();
             loaded_modules[moduleName] = module;
 
-            Mettle.messaging.subscribe(module.controlMessages.hide, function () {
+            Mettle.messageBus.subscribe(module.controlMessages.hide, function () {
                 Mettle.logInfo("destroying module:" + moduleName);
                 module.destroy();
                 $moduleContainer.empty();
@@ -39,7 +39,7 @@
                 destroyedModule[moduleName] = true;
             });
 
-            Mettle.messaging.subscribe(module.controlMessages.show, function (data) {
+            Mettle.messageBus.subscribe(module.controlMessages.show, function (data) {
                 if (destroyedModule[moduleName]) {
                     Mettle.logInfo("loading destroyed module:" + moduleName);
                     $moduleContainer.html(content[moduleName]);

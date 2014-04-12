@@ -31,7 +31,7 @@ describe("News.controller", function () {
                 }
             });
             controller.load();
-            Mettle.messaging.publish("navigationChangedTo:example", {});
+            Mettle.messageBus.publish("navigationChangedTo:example", {});
             mockServiceExpectation.verify();
             mockService.restore();
         });
@@ -41,7 +41,7 @@ describe("News.controller", function () {
         it("should subscribe to events", function () {
             $fragments = $("#fragments");
             $fragments.html("<div id='tmplNewsList'>{{title}}</div><div id='tmplNewsDetail'>{{title}}</div>");
-            var mockNavView = sinon.mock(Mettle.messaging);
+            var mockNavView = sinon.mock(Mettle.messageBus);
             var expectation = mockNavView.expects("subscribe").thrice();
             var controller = new APP.controller.News();
             controller.load();
@@ -56,7 +56,7 @@ describe("News.controller", function () {
             $fragments.html("<div id='tmplNewsList'>{{title}}</div><div id='tmplNewsDetail'>{{title}}</div>");
             var controller = new APP.controller.News();
             controller.load();
-            Mettle.messaging.publish("navigationChangedTo:example", {});
+            Mettle.messageBus.publish("navigationChangedTo:example", {});
             controller.destroy();
         });
     });
